@@ -1,0 +1,23 @@
+# Ambientes e Editores Locais
+.agents/
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Armazenamento e Logs
+storage/*.json
+!storage/.gitkeep
+*.log
+
+# Dependências
+vendor/
+
+# Variáveis de Ambiente e Segredos
+.env*
+!.env.example
+
+# Arquivos de Sistema Operacional
+.DS_Store
+Thumbs.db
+Desktop.ini

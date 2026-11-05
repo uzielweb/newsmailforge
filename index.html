@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Mail Forge — SDK Visual de E-mail Marketing em Vanilla JS & PHP Bridge</title>
+  <meta name="description" content="News Mail Forge é um SDK completo em Vanilla JS puro (Zero Node.js) para criação de templates de e-mail marketing responsivos com tabelas blindadas MSO/Outlook e PHP Bridge agnóstico.">
+  <link rel="stylesheet" href="dist-vanilla/css/editor.css">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #090d16;
+    }
+    #studio-app {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="studio-app"></div>
+
+  <script type="module">
+    import { mount, NewsMailForge } from './dist-vanilla/js/NewsMailForge.js';
+
+    // Inicializa o Studio montando no container em tela cheia
+    const editor = mount('#studio-app', {
+      preset: 'editorial_digest',
+      locale: 'pt-BR',
+      maxHistory: 50,
+      onSave: async ({ doc, compiledHtml, schemaJson }) => {
+        // Exemplo de salvamento no frontend (LocalStorage ou bridge)
+        localStorage.setItem('newsmailforge_saved_doc', schemaJson);
+        localStorage.setItem('newsmailforge_saved_html', compiledHtml);
+      }
+    });
+
+    // Torna acessível no console para inspeção e testes do desenvolvedor
+    window.editorInstance = editor;
+  </script>
+</body>
+</html>
+
