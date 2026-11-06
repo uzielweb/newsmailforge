@@ -68,31 +68,21 @@ export const PRESETS = [
           },
           rows: [
             BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
-              cells: [
-                BlockFactory.createCell({
-                  settings: { width: '100%' },
-                  children: [
-                    BlockFactory.createImageAtom({
-                      src: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=80',
-                      alt: 'Capa do Artigo Principal',
-                      settings: { width: 552, height: 260, borderRadius: 6, align: 'center' }
-                    })
-                  ]
-                })
-              ]
-            }),
-            BlockFactory.createRow({
               settings: { gap: 0 },
               cells: [
                 BlockFactory.createCell({
                   settings: { width: '100%', horizontalAlign: 'left' },
                   children: [
+                    BlockFactory.createImageAtom({
+                      src: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=80',
+                      alt: 'Capa do Artigo Principal',
+                      settings: { width: 552, height: 260, borderRadius: 6, align: 'center', spacing: { margin: [0, 0, 16, 0] } }
+                    }),
                     BlockFactory.createTextAtom({
                       value: '<h2 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.25;">A Arte da Engenharia Limpa: Como Reduzir Dependências Sem Perder Velocidade</h2><p style="margin: 0 0 16px 0; font-size: 15px; color: #475569; line-height: 1.6;">O excesso de frameworks e compiladores pesados introduziu uma dívida técnica silenciosa nas empresas. Examinamos como o retorno a padrões web nativos (ES6 Modules, Vanilla JS e PHP moderno) está transformando a produtividade de equipes de alto rendimento.</p>'
                     }),
                     BlockFactory.createButtonAtom({
-                      value: 'Continuar Lendo o Artigo &rarr;',
+                      value: 'Continuar Lendo o Artigo →',
                       link: 'https://example.com/artigo-capa',
                       settings: {
                         align: 'left',
@@ -129,7 +119,7 @@ export const PRESETS = [
                       settings: { width: 260, height: 150, borderRadius: 6, align: 'center' }
                     }),
                     BlockFactory.createTextAtom({
-                      value: '<h4 style="margin: 12px 0 6px 0; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.3;">O Fim das Quebras no Outlook 365</h4><p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; line-height: 1.5;">Entenda como as tabelas fantasmas e espaçadores automáticos blindam seus e-mails.</p><a href="https://example.com" style="color: #2563eb; font-weight: 700; font-size: 13px; text-decoration: none;">Ler Estudo &rarr;</a>'
+                      value: '<h4 style="margin: 12px 0 6px 0; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.3;">O Fim das Quebras no Outlook 365</h4><p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; line-height: 1.5;">Entenda como as tabelas fantasmas e espaçadores automáticos blindam seus e-mails.</p><a href="https://example.com" style="color: #2563eb; font-weight: 700; font-size: 13px; text-decoration: none;">Ler Estudo →</a>'
                     })
                   ]
                 }),
@@ -142,7 +132,7 @@ export const PRESETS = [
                       settings: { width: 260, height: 150, borderRadius: 6, align: 'center' }
                     }),
                     BlockFactory.createTextAtom({
-                      value: '<h4 style="margin: 12px 0 6px 0; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.3;">Segurança OWASP em E-mails</h4><p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; line-height: 1.5;">Checklist definitivo para sanitização rigorosa de payloads e prevenção de XSS.</p><a href="https://example.com" style="color: #2563eb; font-weight: 700; font-size: 13px; text-decoration: none;">Acessar Guia &rarr;</a>'
+                      value: '<h4 style="margin: 12px 0 6px 0; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.3;">Segurança OWASP em E-mails</h4><p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; line-height: 1.5;">Checklist definitivo para sanitização rigorosa de payloads e prevenção de XSS.</p><a href="https://example.com" style="color: #2563eb; font-weight: 700; font-size: 13px; text-decoration: none;">Acessar Guia →</a>'
                     })
                   ]
                 })
@@ -160,24 +150,14 @@ export const PRESETS = [
           },
           rows: [
             BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [0, 0, 14, 0] } },
-              cells: [
-                BlockFactory.createCell({
-                  settings: { width: '100%', horizontalAlign: 'center' },
-                  children: [
-                    BlockFactory.createSocialAtom({
-                      settings: { align: 'center', iconTheme: 'light', iconSize: 26, iconGap: 18 }
-                    })
-                  ]
-                })
-              ]
-            }),
-            BlockFactory.createRow({
               settings: { gap: 0 },
               cells: [
                 BlockFactory.createCell({
                   settings: { width: '100%', horizontalAlign: 'center' },
                   children: [
+                    BlockFactory.createSocialAtom({
+                      settings: { align: 'center', iconTheme: 'light', iconSize: 26, iconGap: 18, spacing: { margin: [0, 0, 14, 0] } }
+                    }),
                     BlockFactory.createTextAtom({
                       value: '<p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8; text-align: center;">News Mail Forge Editorial • Conhecimento Técnico Livre</p><p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;"><a href="https://example.com/unsub" style="color: #cbd5e1; text-decoration: underline;">Descadastrar</a> • <a href="https://example.com/prefs" style="color: #cbd5e1; text-decoration: underline;">Preferências</a></p>',
                       settings: { align: 'center' }
@@ -247,16 +227,16 @@ export const PRESETS = [
           ]
         }),
 
-        // Seção Contínua de Cronograma (Segue 100% DIRETRIZES-CONSTRUCAO-EMM-OUTLOOK.md)
+        // Seção Contínua de Cronograma (Blocos individuais de 1 Linha com Colunas)
         BlockFactory.createBlock({
-          label: 'Programação Oficial do Evento',
+          label: 'Cabeçalho do Cronograma',
           settings: {
             backgroundColor: '#0D0D18',
-            spacing: { padding: [16, 24, 28, 24] }
+            spacing: { padding: [16, 24, 8, 24] }
           },
           rows: [
             BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+              settings: { gap: 0 },
               cells: [
                 BlockFactory.createCell({
                   settings: { width: '100%', horizontalAlign: 'left' },
@@ -268,10 +248,19 @@ export const PRESETS = [
                   ]
                 })
               ]
-            }),
-            // Item 1: Relógio / Abertura (valign=middle duplo, zero horizontal padding na td do ícone, padding-left na de texto)
+            })
+          ]
+        }),
+        // Item 1: Relógio / Abertura
+        BlockFactory.createBlock({
+          label: 'Cronograma: Credenciamento',
+          settings: {
+            backgroundColor: '#0D0D18',
+            spacing: { padding: [6, 24, 6, 24] }
+          },
+          rows: [
             BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+              settings: { gap: 0 },
               cells: [
                 BlockFactory.createCell({
                   settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
@@ -293,10 +282,19 @@ export const PRESETS = [
                   ]
                 })
               ]
-            }),
-            // Item 2: Keynote
+            })
+          ]
+        }),
+        // Item 2: Keynote
+        BlockFactory.createBlock({
+          label: 'Cronograma: Painel de Abertura',
+          settings: {
+            backgroundColor: '#0D0D18',
+            spacing: { padding: [6, 24, 6, 24] }
+          },
+          rows: [
             BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+              settings: { gap: 0 },
               cells: [
                 BlockFactory.createCell({
                   settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
@@ -318,10 +316,19 @@ export const PRESETS = [
                   ]
                 })
               ]
-            }),
-            // Item 3: Almoço / Networking
+            })
+          ]
+        }),
+        // Item 3: Almoço / Networking
+        BlockFactory.createBlock({
+          label: 'Cronograma: Almoço Executivo',
+          settings: {
+            backgroundColor: '#0D0D18',
+            spacing: { padding: [6, 24, 6, 24] }
+          },
+          rows: [
             BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+              settings: { gap: 0 },
               cells: [
                 BlockFactory.createCell({
                   settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
@@ -343,10 +350,19 @@ export const PRESETS = [
                   ]
                 })
               ]
-            }),
-            // Item 4: Transfers e Retorno
+            })
+          ]
+        }),
+        // Item 4: Transfers e Retorno
+        BlockFactory.createBlock({
+          label: 'Cronograma: Encerramento',
+          settings: {
+            backgroundColor: '#0D0D18',
+            spacing: { padding: [6, 24, 28, 24] }
+          },
+          rows: [
             BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [0, 0, 8, 0] } },
+              settings: { gap: 0 },
               cells: [
                 BlockFactory.createCell({
                   settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
@@ -520,21 +536,11 @@ export const PRESETS = [
                         borderRadius: 6,
                         spacing: { padding: [14, 32, 14, 32] }
                       }
-                    })
-                  ]
-                })
-              ]
-            }),
-            BlockFactory.createRow({
-              settings: { gap: 0, spacing: { padding: [24, 0, 0, 0] } },
-              cells: [
-                BlockFactory.createCell({
-                  settings: { width: '100%' },
-                  children: [
+                    }),
                     BlockFactory.createImageAtom({
                       src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=80',
                       alt: 'Editor Preview',
-                      settings: { width: 552, height: 280, borderRadius: 8, align: 'center' }
+                      settings: { width: 552, height: 280, borderRadius: 8, align: 'center', spacing: { margin: [24, 0, 0, 0] } }
                     })
                   ]
                 })

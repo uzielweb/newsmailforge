@@ -171,7 +171,7 @@ final class UnifiedTestRunner
 
         $phpSyntaxErrors = [];
         foreach ($phpFiles as $path) {
-            $cmd = escapeshellcmd('php -l ' . escapeshellarg($path)) . ' 2>&1';
+            $cmd = 'php -l ' . escapeshellarg($path) . ' 2>&1';
             $output = [];
             $code = 0;
             exec($cmd, $output, $code);
@@ -199,7 +199,7 @@ final class UnifiedTestRunner
 
         $jsSyntaxErrors = [];
         foreach ($jsFiles as $path) {
-            $cmd = escapeshellcmd('node --check ' . escapeshellarg($path)) . ' 2>&1';
+            $cmd = 'node --check ' . escapeshellarg($path) . ' 2>&1';
             $output = [];
             $code = 0;
             exec($cmd, $output, $code);
@@ -212,6 +212,17 @@ final class UnifiedTestRunner
             empty($jsSyntaxErrors),
             'Todos os ' . count($jsFiles) . ' arquivos JS/MJS passaram em node --check com sucesso',
             implode(' | ', $jsSyntaxErrors)
+        );
+
+        // Validacao de carregamento ESM real de toda a arvore de modulos JS
+        $esmCmd = 'node --input-type=module -e "await import(\'./dist-vanilla/js/NewsMailForge.js\')" 2>&1';
+        $esmOutput = [];
+        $esmExitCode = 0;
+        exec($esmCmd, $esmOutput, $esmExitCode);
+        $this->assert(
+            $esmExitCode === 0,
+            'Carregamento ESM real de toda a arvore de modulos JS via NewsMailForge.js concluido com status 0',
+            implode("\n", $esmOutput)
         );
     }
 
@@ -643,6 +654,75 @@ final class UnifiedTestRunner
         $this->assert(str_contains($fullOut, 'BlockCatalog 8 categorias'), 'BlockCatalog contem as 8 categorias obrigatorias');
         $this->assert(str_contains($fullOut, 'BuiltinPresets 4 templates completos'), 'BuiltinPresets contem 4 templates agnosticos e completos');
         $this->assert(str_contains($fullOut, 'TODOS OS METATESTES E INVARIANTES PASSARAM COM SUCESSO 100%'), 'Todos os metatestes e invariantes do compilador JS passaram 100%');
+
+        // Metatestes de Interface e Componentes Wave 3 (ColorPickerPopover, Studio Mode & Inspector)
+        $colorPickerFile = $this->projectRoot . '/dist-vanilla/js/ui/ColorPickerPopover.js';
+        $this->assert(is_file($colorPickerFile), 'Arquivo dist-vanilla/js/ui/ColorPickerPopover.js existe na lista de validacao JS');
+
+        // (1) Zero input type="color" nativo em InspectorPanel.js e InlineRichText.js
+        $inspectorFile = $this->projectRoot . '/dist-vanilla/js/ui/InspectorPanel.js';
+        $inlineRichTextFile = $this->projectRoot . '/dist-vanilla/js/ui/InlineRichText.js';
+        $inspectorCode = (string) file_get_contents($inspectorFile);
+        $inlineRichTextCode = (string) file_get_contents($inlineRichTextFile);
+
+        $hasNativeColorInput = str_contains($inspectorCode, 'type="color"')
+            || str_contains($inspectorCode, "type = 'color'")
+            || str_contains($inspectorCode, "type='color'")
+            || str_contains($inlineRichTextCode, 'type="color"')
+            || str_contains($inlineRichTextCode, "type = 'color'")
+            || str_contains($inlineRichTextCode, "type='color'");
+
+        $this->assert(
+            !$hasNativeColorInput,
+            'Metateste 1: Zero inputs type="color" nativos em InspectorPanel.js e InlineRichText.js (ColorPickerPopover universal)'
+        );
+
+        // (2) ColorPickerPopover exporta ColorPickerPopover com open, close, parseToRgb, rgbToHsv, hsvToRgb, rgbToHsl, hslToRgb e 50 cores seguras
+        $colorPickerCode = (string) file_get_contents($colorPickerFile);
+        $hasColorPickerMethods = str_contains($colorPickerCode, 'open(')
+            && str_contains($colorPickerCode, 'close(')
+            && str_contains($colorPickerCode, 'parseToRgb(')
+            && str_contains($colorPickerCode, 'rgbToHsv(')
+            && str_contains($colorPickerCode, 'hsvToRgb(')
+            && str_contains($colorPickerCode, 'rgbToHsl(')
+            && str_contains($colorPickerCode, 'hslToRgb(');
+
+        preg_match_all("/'#[0-9a-fA-F]{6}'/", $colorPickerCode, $colorMatches);
+        $safeColorsCount = isset($colorMatches[0]) ? count(array_unique($colorMatches[0])) : 0;
+
+        $this->assert(
+            $hasColorPickerMethods && $safeColorsCount >= 50,
+            'Metateste 2: ColorPickerPopover exporta open, close, parseToRgb, rgbToHsv, hsvToRgb, rgbToHsl, hslToRgb e paleta de 50 cores seguras'
+        );
+
+        // (3) editor.css possui .nmf-studio.is-preview-mode .nmf-body com grid-template-columns: 1fr
+        $editorCssFile = $this->projectRoot . '/dist-vanilla/css/editor.css';
+        $editorCss = (string) file_get_contents($editorCssFile);
+        $hasPreviewGridSingleCol = str_contains($editorCss, '.nmf-studio.is-preview-mode .nmf-body')
+            && (bool) preg_match('/\.nmf-studio\.is-preview-mode\s+\.nmf-body\s*\{[^}]*grid-template-columns:\s*1fr/s', $editorCss);
+        $this->assert(
+            $hasPreviewGridSingleCol,
+            'Metateste 3: editor.css possui .nmf-studio.is-preview-mode .nmf-body com grid-template-columns: 1fr'
+        );
+
+        // (4) CanvasStage.js possui memoizacao _lastRenderedDocJson e removeu btnEdit (lapis)
+        $canvasStageFile = $this->projectRoot . '/dist-vanilla/js/ui/CanvasStage.js';
+        $canvasStageCode = (string) file_get_contents($canvasStageFile);
+        $hasMemoization = str_contains($canvasStageCode, '_lastRenderedDocJson');
+        $hasNoBtnEdit = !str_contains($canvasStageCode, 'btnEdit') && !str_contains($canvasStageCode, 'nmf-btn-edit');
+        $this->assert(
+            $hasMemoization && $hasNoBtnEdit,
+            'Metateste 4: CanvasStage.js possui memoizacao _lastRenderedDocJson e removeu btnEdit (lapis)'
+        );
+
+        // (5) InspectorPanel.js possui _createContextualStructureManager apenas em Block e Row (sem duplicar em Cell/Atom) e CanvasStage possui _insertRowRelativeToSelection
+        $contextualOccurrences = substr_count($inspectorCode, '_createContextualStructureManager');
+        $hasCanvasAddRowOverlay = str_contains($canvasStageCode, '_insertRowRelativeToSelection')
+            && str_contains($canvasStageCode, 'nmf-overlay-edge-btn');
+        $this->assert(
+            $contextualOccurrences === 3 && $hasCanvasAddRowOverlay,
+            'Metateste 5: InspectorPanel.js isola _createContextualStructureManager em Block/Row e CanvasStage.js possui _insertRowRelativeToSelection no overlay'
+        );
     }
 }
 

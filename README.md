@@ -1,156 +1,163 @@
 # NewsMailForge
 
-> Construtor e Editor de E-mails Responsivos Agnóstico de Alta Performance, combinando Studio Vanilla JS (zero dependências pesadas) e um PHP Bridge modular e extensível para qualquer CMS, framework ou aplicação nativa.
+> **High-Performance, Framework-Agnostic Responsive Email Visual Studio & Builder** — combining a zero-dependency **Vanilla JS ES6 Visual Studio** with a modular, extensible **PSR-4 PHP Bridge** for any CMS, framework, or custom application.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PHP Version](https://img.shields.io/badge/PHP-%3E%3D8.1-777BB4.svg)](https://www.php.net/)
 [![Standards](https://img.shields.io/badge/Standards-PSR--4%20%7C%20OWASP-green.svg)](https://www.php-fig.org/)
 [![Live Demo](https://img.shields.io/badge/Demo-GitHub%20Pages-0ea5e9.svg)](https://uzielweb.github.io/newsmailforge/)
 
-> 🔗 **Demo Interativo (GitHub Pages)**: **[https://uzielweb.github.io/newsmailforge/](https://uzielweb.github.io/newsmailforge/)**
+> 🔗 **Interactive Live Demo (GitHub Pages)**: **[https://uzielweb.github.io/newsmailforge/](https://uzielweb.github.io/newsmailforge/)**  
+> 📖 **Full Technical Documentation**: **[`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)**
 
 ---
 
-## 🚀 Visão Geral
+## ✨ Key Features & Highlights
 
-O **NewsMailForge** foi concebido para resolver o problema de criação e edição de e-mails de marketing e transacionais sem aprisionamento a frameworks pesados (React/Vue/Webpack/Vite no core de edição). Ele entrega:
-
-1. **Studio Client-Side (Vanilla JS)**: Opera 100% no navegador ou via GitHub Pages, com i18n offline nativo e drag-and-drop limpo.
-2. **PHP Bridge Agnóstico (PSR-4)**: Integração em minutos com qualquer ecossistema:
-   - **Joomla 4 / 5 / 6**
-   - **WordPress**
-   - **Laravel / Symfony**
-   - **Aplicações legadas e bancos de dados customizados via PDO ou Callbacks**
-3. **Segurança OWASP em Primeiro Lugar**: Sanitização rigorosa contra XSS, sanitização de esquemas de URL, proteção contra injeção SQL em drivers e limitação de profundidade de nós.
-4. **Zero Hardcoded Strings**: Toda a interface e mensagens de sistema utilizam o motor de tradução agnóstico (`pt-BR` e `en-GB`).
+1. **Unified, Intuitive 3-Level Visual Hierarchy (`Row ➔ Column ➔ Element`)**:
+   - **Rows (`Linhas`)**: Top-level horizontal structural containers supporting 1 to 6 customizable columns (`100%`, `50/50`, `33/33/33`, `25/25/25/25`, `30/70`, `70/30`, or custom interactive percentages) with drag-and-drop placement above or below any row.
+   - **Columns (`Colunas`)**: Responsive table cells with interactive drag-resizers on the canvas, empty-state quick-insert popovers (`+ Insert Content`), vertical alignment, background, and per-column padding controls.
+   - **Elements (`Elementos`)**: Rich atomic components (**Text**, **Image**, **Button**, **Divider**, **Spacer**, **Menu**, **Social Networks**) that always drop cleanly inside columns or before/after sibling elements.
+2. **Enterprise-Grade Vanilla JS Visual Studio (Zero Build Step)**:
+   - Runs 100% natively in any modern browser via ES Modules (`dist-vanilla/js/NewsMailForge.js`) without React, Vue, Webpack, or Node.js runtime requirements.
+   - **Custom Universal Color Picker (`ColorPickerPopover.js`)**: Floating 2D HSV saturation/value canvas, hue slider, 50 email-safe swatches, recent colors history (`localStorage`), `HEX`/`RGB`/`HSL` live switcher, and one-click `Transparent` support across the entire Inspector and Rich Text toolbar.
+   - **In-Place Rich Text Editor (`InlineRichText.js`)**: Single-click editing with floating toolbar, dynamic Merge Tags (`{{first_name}}`, `{{email}}`, `{{unsubscribe_url}}`), and **Inline Image Framing & Link Manager** (supporting `Float Left`, `Float Right`, `Centered Block`, `Aligned Left/Right Block`, `Inline`, custom pixel width, alt text, and clickable `<a href="...">` wrapping).
+   - **Customizable Social Networks Element**: Built-in crisp inline vector icons (`Facebook`, `Instagram`, `LinkedIn`, `X/Twitter`, `YouTube`, `GitHub`, `WhatsApp`, `Website`) with global or per-network custom icon color pickers, official brand colors theme, AND custom icon image URL (`customIconUrl`) replacement per network.
+   - **Full-Width Preview Mode**: Collapses both left and right sidebars automatically to showcase Desktop (`600px`) and Mobile (`375px`) email rendering at 100% studio width.
+3. **Bulletproof Outlook (Word Engine) & Mobile Email Compiler (`EmailCompiler.js`)**:
+   - Compiles the JSON document tree into **XHTML 1.0 Transitional** table-based markup.
+   - **MSO Conditional Ghost Tables** (`<!--[if mso]>...<![endif]-->`), **VML `<v:roundrect>` buttons**, physical `<td>` gap spacer columns, subpixel bleeding prevention, and `@media only screen and (max-width: 600px)` responsive stacking.
+4. **Framework-Agnostic PHP Bridge (PSR-4 & MVC)**:
+   - Drop-in backend integration for **Joomla 4/5/6**, **WordPress**, **Laravel**, **Symfony**, or custom PHP applications via three built-in drivers:
+     - `JsonFileStorageDriver` (Zero-database file storage)
+     - `ConfigurablePdoDriver` (Maps to any existing database table and column names)
+     - `CallbackStorageDriver` (Hooks directly into any CMS ORM or service layer via closures)
+5. **OWASP Security & Bilingual i18n (`pt-BR` & `en-GB`)**:
+   - Strict XSS sanitization preserving Outlook MSO/VML comments, URL scheme whitelisting, SQL identifier regex validation, path traversal protection, and 100% key parity across `pt-BR` and `en-GB` dictionaries.
 
 ---
 
-## 📁 Estrutura de Diretórios
+## 📁 Directory Structure
 
-```
+```text
 newsmailforge/
-├── index.html                      # Demo interativo full-screen (GitHub Pages / Standalone)
-├── bootstrap.php                   # Autoloader PSR-4 e inicialização de i18n
-├── dist-vanilla/                   # SDK Visual Front-End em Vanilla JS ES6 (Zero Node.js)
+├── index.html                      # Standalone full-screen Interactive Studio (GitHub Pages)
+├── index.php                       # Local server entry point (redirects/serves the Studio)
+├── bootstrap.php                   # PSR-4 autoloader and server-side i18n bootstrap
+├── docs/
+│   └── DOCUMENTATION.md            # Complete Architecture, SDK API & Integration Manual
+├── dist-vanilla/                   # Front-End Visual SDK in pure ES6 Vanilla JS
 │   ├── css/
-│   │   └── editor.css              # Layout Studio 3 colunas, Flyout Drawer, Overlay e Toolbar
+│   │   └── editor.css              # 3-Column Studio layout, Overlays, Resizers & Popovers
 │   └── js/
-│       ├── NewsMailForge.js        # Fachada pública: mount(), getHtml(), getSchema(), setSchema()
+│       ├── NewsMailForge.js        # Public SDK Facade: mount(), getHtml(), getSchema(), setSchema()
 │       ├── i18n/
-│       │   └── I18n.js             # Módulo Vanilla JS i18n (offline fallback embutido)
+│       │   └── I18n.js             # Reactive Vanilla JS i18n engine (with offline embedded fallback)
 │       ├── core/
-│       │   ├── BlockFactory.js     # Construtores de Document, Block, Row, Cell e Atoms
-│       │   ├── Store.js            # Estado reativo, Seleção 5 níveis e Undo/Redo
-│       │   └── EmailCompiler.js    # Compilador JSON -> HTML Tabelado (Gap Spacers + MSO + VML)
+│       │   ├── BlockFactory.js     # Factory constructors for Document, Row, Column, and Elements
+│       │   ├── Store.js            # Reactive state container, selection hierarchy, and Undo/Redo
+│       │   └── EmailCompiler.js    # JSON -> XHTML 1.0 Transitional compiler (MSO + VML + Gap Spacers)
 │       ├── catalog/
-│       │   ├── BlockCatalog.js     # 24 Blocos modulares nas 8 categorias
-│       │   └── BuiltinPresets.js   # 4 Templates completos originais e agnósticos
+│       │   ├── BlockCatalog.js     # 24 Ready-made Row Models across 8 categories
+│       │   └── BuiltinPresets.js   # 4 Complete, ready-to-use Email Templates
 │       └── ui/
-│           ├── HeaderBar.js        # Topbar (Presets, Undo/Redo, Viewport, Código MSO, Export/Save)
-│           ├── SidebarPanel.js     # Biblioteca com Flyout Drawer + Aba de Árvore
-│           ├── TreeNavigator.js    # Árvore recursiva com linha de inserção '+'
-│           ├── CanvasStage.js      # Palco responsivo (600px/375px) + Selection Overlay
-│           ├── InlineRichText.js   # Edição rich-text in-place com barra flutuante
-│           ├── InspectorPanel.js   # Inspetor contextual de 5 níveis
-│           └── ScrubNumberInput.js # Inputs numéricos arrastáveis (scrubbable)
+│           ├── HeaderBar.js        # Topbar (Templates, Undo/Redo, Viewport, MSO Code, Import/Export/Save)
+│           ├── SidebarPanel.js     # Left Library (Rows & Columns, Custom Proportions, Elements, Ready Rows)
+│           ├── TreeNavigator.js    # Interactive hierarchy tree (Row -> Column -> Element) with DnD
+│           ├── CanvasStage.js      # Responsive stage (600px/375px), Selection Overlay & Column Resizers
+│           ├── InlineRichText.js   # In-place rich text toolbar & Inline Image Framing/Link Popover
+│           ├── InspectorPanel.js   # Context-aware right property inspector & visual column manager
+│           ├── ColorPickerPopover.js # Universal floating HSV/HEX/RGB/HSL + 50-swatch color picker
+│           └── ScrubNumberInput.js # Scrubbable numeric inputs with drag-to-adjust support
 ├── examples/
-│   ├── api-bridge.php              # Endpoint REST do PHP Bridge
-│   ├── 01-studio-full-demo.php     # Studio completo integrado ao PHP Bridge
-│   ├── 02-form-textarea-binding.php# Integração via <form> e <textarea> ($_POST)
-│   └── 03-custom-pdo-table-mapper.php # Mapeamento customizado de tabela/colunas via PDO
+│   ├── api-bridge.php              # REST endpoint for the PHP Bridge
+│   ├── 01-studio-full-demo.php     # Full Studio integrated with the PHP Bridge
+│   ├── 02-form-textarea-binding.php# Standard HTML <form> & <textarea> ($_POST) integration
+│   └── 03-custom-pdo-table-mapper.php # Custom PDO table/column mapping example
 ├── tests/
-│   ├── run_tests.php               # Suíte unificada + Metatestes das 3 Invariantes de Borda
-│   └── test_core_compiler.mjs      # Testes do compilador MSO/VML e Store JS
+│   ├── run_tests.php               # Unified test runner + 3 Edge Invariant Metatests (76 assertions)
+│   └── test_core_compiler.mjs      # Node.js ES Module test suite for Store, Compiler & UI components
 ├── language/
 │   ├── en-GB/
-│   │   └── en-GB.json             # Dicionário Inglês Britânico
+│   │   └── en-GB.json              # British English dictionary (334 keys)
 │   └── pt-BR/
-│       └── pt-BR.json             # Dicionário Português do Brasil
+│       └── pt-BR.json              # Brazilian Portuguese dictionary (334 keys)
 ├── src/
 │   ├── Contracts/
-│   │   └── StorageDriverInterface.php  # Contrato agnóstico de persistência
+│   │   └── StorageDriverInterface.php  # Agnostic persistence contract
 │   ├── Controller/
-│   │   └── BridgeController.php        # Controlador REST (<= 15 linhas por action)
+│   │   └── BridgeController.php        # REST controller (strictly <= 15 lines per action)
 │   ├── Core/
-│   │   ├── Lang.php                    # Gerenciador agnóstico de traduções
-│   │   ├── Request.php                 # Wrapper agnóstico de requisição HTTP
-│   │   ├── Response.php                # Wrapper agnóstico de resposta JSON
-│   │   └── SecurityGuard.php           # Sanitizador OWASP (HTML, URL, Schema)
+│   │   ├── Lang.php                    # Server-side translation manager
+│   │   ├── Request.php                 # HTTP request wrapper
+│   │   ├── Response.php                # JSON HTTP response wrapper
+│   │   └── SecurityGuard.php           # OWASP sanitizer (HTML, URL, Schema depth)
 │   ├── Drivers/
-│   │   ├── CallbackStorageDriver.php   # Driver baseado em Closures (Joomla/WP/Laravel)
-│   │   ├── ConfigurablePdoDriver.php   # Driver PDO parametrizado (anti-SQLi)
-│   │   └── JsonFileStorageDriver.php   # Driver baseado em arquivos JSON (zero-db)
+│   │   ├── CallbackStorageDriver.php   # Closure-based driver (Joomla/WordPress/Laravel)
+│   │   ├── ConfigurablePdoDriver.php   # Parameterized PDO driver with SQL identifier validation
+│   │   └── JsonFileStorageDriver.php   # Zero-DB JSON file storage driver
 │   ├── DTO/
-│   │   └── EmailDocumentDTO.php        # DTO com imutabilidade e tipagem estrita
+│   │   └── EmailDocumentDTO.php        # Immutable, strictly typed Email Document DTO
 │   └── Service/
-│       └── EmailBridgeService.php      # Orquestrador de validação e persistência
-├── storage/                            # Diretório local padrão para armazenamento JSON
-│   └── .gitkeep
-├── LICENSE                             # Licença MIT
+│       └── EmailBridgeService.php      # Validation and persistence orchestrator
+├── storage/                            # Default local directory for JSON storage
+├── LICENSE                             # MIT License
 └── README.md
 ```
 
 ---
 
-## 🛡️ Segurança (OWASP)
+## ⚡ Quick Start
 
-- **Sanitização de HTML (`SecurityGuard::sanitizeHtml`)**:
-  - Elimina tags executáveis (`<script>`, `<iframe>`, `<object>`, `<embed>`, `<applet>`, `<form>`).
-  - Remove manipuladores de evento (`onclick`, `onload`, `onerror`, etc.).
-  - Remove URLs com esquemas maliciosos (`javascript:`, `vbscript:`, `data:text/html`).
-  - **Preserva comentários condicionais MSO (`<!--[if mso]>...<![endif]-->`)** essenciais para renderização no Microsoft Outlook.
-  - **Preserva namespaces e formas VML** (`<v:roundrect>`, `<v:fill>`, `<v:stroke>`, `<w:anchorlock/>`).
-- **Sanitização de URLs (`SecurityGuard::sanitizeUrl`)**:
-  - Aceita apenas esquemas seguros: `https://`, `http://`, `mailto:`, `tel:`, além de links âncora `#`.
-- **Validação de Profundidade de Árvore (`SecurityGuard::validateSchema`)**:
-  - Previne estouro de pilha e ataques de negação de serviço (DoS) por JSON aninhado, limitando a profundidade da árvore a 12 níveis.
-- **Proteção Anti-SQL Injection (`ConfigurablePdoDriver`)**:
-  - Validação estrita por expressão regular `^[a-zA-Z0-9_]+$` para qualquer nome de tabela ou coluna.
-  - Execução 100% parametrizada via Prepared Statements PDO.
-- **Proteção Anti-Path Traversal (`JsonFileStorageDriver`)**:
-  - Validação de identificadores de documento com `^[a-zA-Z0-9_\-]+$`.
+### 1. Front-End Standalone (Vanilla JS ES Modules)
 
----
+Mount the complete Visual Studio inside any container element with zero build tools:
 
-## 🌐 Internacionalização (i18n)
+```html
+<link rel="stylesheet" href="./dist-vanilla/css/editor.css" />
+<div id="email-studio" style="height: 100vh;"></div>
 
-### Uso no PHP
+<script type="module">
+  import { NewsMailForge } from './dist-vanilla/js/NewsMailForge.js';
 
-```php
-use NewsMailForge\Core\Lang;
-
-// Inicializa o idioma desejado (padrão 'pt-BR')
-Lang::init('pt-BR');
-
-// Obtém mensagem traduzida com interpolação de parâmetros
-$mensagem = Lang::t('bridge.success.save');
-$formatada = Lang::t('bridge.error.invalid_sql_identifier', ['identifier' => 'unsafe_col;']);
+  const editor = NewsMailForge.mount('#email-studio', {
+    locale: 'en-GB', // or 'pt-BR'
+    preset: 'welcome', // 'welcome' | 'newsletter' | 'promotion' | 'transactional'
+    apiEndpoint: './examples/api-bridge.php', // optional PHP Bridge endpoint
+    onSave: ({ html, schema }) => {
+      console.log('Compiled Outlook-ready HTML:', html);
+      console.log('JSON AST Schema:', schema);
+    },
+    onChange: ({ html, schema }) => {
+      // Real-time synchronization (e.g., hidden <textarea>)
+    }
+  });
+</script>
 ```
 
-### Uso no JavaScript (Vanilla)
+### 2. Binding to an Existing HTML `<form>` / `<textarea>`
 
 ```javascript
-import i18n, { I18n } from './dist-vanilla/js/i18n/I18n.js';
+import { NewsMailForge } from './dist-vanilla/js/NewsMailForge.js';
 
-// Tradução imediata
-console.log(i18n.t('ui.save')); // "Salvar"
+const htmlInput = document.querySelector('#newsletter_html');
+const jsonInput = document.querySelector('#newsletter_json');
 
-// Alternar idioma em tempo de execução
-i18n.setLocale('en-GB');
-console.log(i18n.t('ui.save')); // "Save"
-
-// Registrar ouvintes para atualização reativa da UI
-i18n.onLocaleChange((locale) => {
-  console.log('Idioma alterado para:', locale);
+const studio = NewsMailForge.mount('#studio-container', {
+  locale: 'en-GB',
+  initialSchema: jsonInput.value ? JSON.parse(jsonInput.value) : null,
+  onChange: ({ html, schema }) => {
+    htmlInput.value = html;
+    jsonInput.value = JSON.stringify(schema);
+  }
 });
 ```
 
 ---
 
-## 🔌 Exemplos de Integração do PHP Bridge
+## 🔌 PHP Bridge Integration Examples
 
-### 1. Zero Banco (Armazenamento em Arquivos JSON)
+### 1. Zero-Database Mode (`JsonFileStorageDriver`)
 
 ```php
 require_once __DIR__ . '/bootstrap.php';
@@ -163,11 +170,10 @@ $driver = new JsonFileStorageDriver(__DIR__ . '/storage');
 $service = new EmailBridgeService($driver);
 $controller = new BridgeController($service);
 
-$response = $controller->handleRequest();
-$response->send();
+$controller->handleRequest()->send();
 ```
 
-### 2. Integração com Banco de Dados Existente (PDO)
+### 2. Custom Database Table Mapping (`ConfigurablePdoDriver`)
 
 ```php
 require_once __DIR__ . '/bootstrap.php';
@@ -195,7 +201,7 @@ $controller = new BridgeController($service);
 $controller->handleRequest()->send();
 ```
 
-### 3. Integração em CMS (Joomla, WordPress, Laravel) via Callbacks
+### 3. CMS & Framework Integration (`CallbackStorageDriver` for Joomla, WordPress, Laravel)
 
 ```php
 require_once __DIR__ . '/bootstrap.php';
@@ -207,14 +213,11 @@ use NewsMailForge\DTO\EmailDocumentDTO;
 
 $driver = new CallbackStorageDriver(
     onSave: function (EmailDocumentDTO $dto): array {
-        // Exemplo: Salvar via Joomla JTable / ORM Laravel / WordPress wpdb
         $id = $dto->id ?? uniqid('tpl_');
-        // MeuOrm::save(['id' => $id, 'title' => $dto->title, ...]);
+        // Save via Joomla Table / Laravel Eloquent / WordPress $wpdb
         return ['id' => $id, 'success' => true];
     },
     onLoad: function (string $id): ?EmailDocumentDTO {
-        // $record = MeuOrm::find($id);
-        // return new EmailDocumentDTO($record->id, $record->title, ...);
         return null;
     },
     onList: function (int $limit): array {
@@ -232,8 +235,40 @@ $controller->handleRequest()->send();
 
 ---
 
-## 📜 Licença
+## 🛡️ Security Architecture (OWASP)
 
-Distribuído sob a licença **MIT**. Veja o arquivo [`LICENSE`](LICENSE) para mais detalhes.
+- **HTML Sanitization (`SecurityGuard::sanitizeHtml`)**:
+  - Strips executable tags (`<script>`, `<iframe>`, `<object>`, `<embed>`, `<applet>`, `<form>`).
+  - Removes inline event handlers (`onclick`, `onload`, `onerror`, etc.).
+  - Blocks dangerous URI schemes (`javascript:`, `vbscript:`, `data:text/html`).
+  - **Preserves Microsoft Outlook conditional comments** (`<!--[if mso]>...<![endif]-->`) and **VML vector shapes** (`<v:roundrect>`, `<v:fill>`, `<v:stroke>`, `<w:anchorlock/>`).
+- **URL Sanitization (`SecurityGuard::sanitizeUrl` & `escapeHref`)**:
+  - Whitelists `https://`, `http://`, `mailto:`, `tel:`, and `#` anchors.
+- **AST Depth Guard (`SecurityGuard::validateSchema`)**:
+  - Prevents stack overflow and JSON bomb DoS attacks by enforcing a maximum tree depth of 12 levels.
+- **Anti-SQL Injection (`ConfigurablePdoDriver`)**:
+  - Enforces strict `^[a-zA-Z0-9_]+$` identifier validation on table and column names alongside 100% prepared PDO statements.
+- **Anti-Path Traversal (`JsonFileStorageDriver`)**:
+  - Validates document IDs against `^[a-zA-Z0-9_\-]+$`.
 
-**Autor**: Uziel Almeida Oliveira ([uzielweb](https://github.com/uzielweb))
+---
+
+## 🧪 Running the Test Suite
+
+NewsMailForge includes a unified test runner verifying **UTF-8 No BOM encoding**, **PHP & JS syntax (`php -l` & `node --check`)**, **100% bidirectional i18n parity**, **MVC controller line limits**, **3 Edge Invariant Metatests**, and **JS Compiler/DOM simulations**:
+
+```bash
+# Run the complete PHP + Node.js verification suite (76 assertions)
+php tests/run_tests.php
+
+# Run the standalone Node.js ES Module compiler & UI test suite
+node tests/test_core_compiler.mjs
+```
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for full details.
+
+**Author**: Uziel Almeida Oliveira ([uzielweb](https://github.com/uzielweb))

@@ -150,7 +150,7 @@ $campaigns = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
     // Monta o editor apontando para este próprio script como endpoint de API
     const editor = mount('#studio-editor', {
-      preset: 'summit_invite',
+      preset: 'executive_summit',
       locale: 'pt-BR',
       saveEndpoint: '03-custom-pdo-table-mapper.php'
     });

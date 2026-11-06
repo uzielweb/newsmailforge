@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>News Mail Forge — SDK Visual de E-mail Marketing em Vanilla JS & PHP Bridge</title>
   <meta name="description" content="News Mail Forge é um SDK completo em Vanilla JS puro (Zero Node.js) para criação de templates de e-mail marketing responsivos com tabelas blindadas MSO/Outlook e PHP Bridge agnóstico.">
-  <link rel="stylesheet" href="dist-vanilla/css/editor.css">
+  <link rel="stylesheet" href="dist-vanilla/css/editor.css?v=1.2.0">
   <style>
     html, body {
       margin: 0;
@@ -25,22 +25,32 @@
   <div id="studio-app"></div>
 
   <script type="module">
-    import { mount, NewsMailForge } from './dist-vanilla/js/NewsMailForge.js';
+    import { mount, NewsMailForge } from './dist-vanilla/js/NewsMailForge.js?v=1.2.0';
 
-    // Inicializa o Studio montando no container em tela cheia
-    const editor = mount('#studio-app', {
-      preset: 'editorial_digest',
-      locale: 'pt-BR',
-      maxHistory: 50,
-      onSave: async ({ doc, compiledHtml, schemaJson }) => {
-        // Exemplo de salvamento no frontend (LocalStorage ou bridge)
-        localStorage.setItem('newsmailforge_saved_doc', schemaJson);
-        localStorage.setItem('newsmailforge_saved_html', compiledHtml);
-      }
-    });
+    const initEditor = () => {
+      // Inicializa o Studio montando no container em tela cheia
+      const editor = mount('#studio-app', {
+        preset: 'editorial_digest',
+        locale: 'pt-BR',
+        maxHistory: 50,
+        onSave: async ({ doc, compiledHtml, schemaJson }) => {
+          // Exemplo de salvamento no frontend (LocalStorage ou bridge)
+          try {
+            localStorage.setItem('newsmailforge_saved_doc', schemaJson);
+            localStorage.setItem('newsmailforge_saved_html', compiledHtml);
+          } catch (_) {}
+        }
+      });
 
-    // Torna acessível no console para inspeção e testes do desenvolvedor
-    window.editorInstance = editor;
+      // Torna acessível no console para inspeção e testes do desenvolvedor
+      window.editorInstance = editor;
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initEditor);
+    } else {
+      initEditor();
+    }
   </script>
 </body>
 </html>

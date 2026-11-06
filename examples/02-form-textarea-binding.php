@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Monta o editor apontando para os seletores dos campos do formulário
     mount('#editor-wrapper', {
-      preset: 'welcome',
+      preset: 'saas_launch',
       locale: 'pt-BR',
       bindHtmlInput: '#email_html',
       bindJsonInput: '#email_json'

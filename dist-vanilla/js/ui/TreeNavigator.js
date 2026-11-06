@@ -62,7 +62,7 @@ export class TreeNavigator {
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
-      <span>${I18n.t('ui.add_block', '+ Adicionar Bloco')}</span>
+      <span>${I18n.t('ui.add_block', '+ Adicionar Linha')}</span>
     `;
     btnAddBlock.addEventListener('click', () => {
       const newBlock = BlockFactory.createBlock({
@@ -70,7 +70,7 @@ export class TreeNavigator {
           BlockFactory.createRow({
             cells: [
               BlockFactory.createCell({
-                children: [BlockFactory.createTextAtom()]
+                children: []
               })
             ]
           })
@@ -91,7 +91,7 @@ export class TreeNavigator {
       emptyMsg.style.color = 'var(--nmf-text-tertiary)';
       emptyMsg.style.textAlign = 'center';
       emptyMsg.style.fontSize = '12px';
-      emptyMsg.textContent = I18n.t('ui.tree_empty', 'Nenhum bloco no documento.');
+      emptyMsg.textContent = I18n.t('ui.tree_empty', 'Nenhuma linha no documento.');
       this.element.appendChild(emptyMsg);
       return;
     }
@@ -127,6 +127,7 @@ export class TreeNavigator {
     const rowEl = document.createElement('div');
     rowEl.className = `nmf-tree-row ${isSelected ? 'is-selected' : ''}`;
     rowEl.style.paddingLeft = `${level * 12 + 6}px`;
+    this._attachTreeDragAndDrop(rowEl, block.id, 'block');
 
     const left = document.createElement('div');
     left.className = 'nmf-tree-row-left';
@@ -134,7 +135,9 @@ export class TreeNavigator {
     // Toggle de expansão
     const toggle = document.createElement('span');
     toggle.className = 'nmf-tree-toggle';
-    const hasChildren = Array.isArray(block.rows) && block.rows.length > 0;
+    const hasChildren = Array.isArray(block.rows) && block.rows.length > 0 && (
+      block.rows.length > 1 || (Array.isArray(block.rows[0].cells) && block.rows[0].cells.length > 0)
+    );
     toggle.innerHTML = hasChildren
       ? (isCollapsed ? '&#9654;' : '&#9660;')
       : '&bull;';
@@ -155,7 +158,7 @@ export class TreeNavigator {
 
     const label = document.createElement('span');
     label.className = 'nmf-tree-label';
-    label.textContent = block.label || I18n.t('type.block', 'Bloco');
+    label.textContent = block.label || I18n.t('type.block', 'Linha');
 
     left.appendChild(toggle);
     left.appendChild(icon);
@@ -180,12 +183,23 @@ export class TreeNavigator {
 
     nodeEl.appendChild(rowEl);
 
-    // Filhos (Linhas)
+    // Filhos (Linhas ou Colunas Diretas quando rows.length === 1)
     if (!isCollapsed && Array.isArray(block.rows)) {
       const childrenWrap = document.createElement('div');
-      block.rows.forEach((row) => {
-        this._renderRowNode(childrenWrap, row, block.id, state, level + 1);
-      });
+      if (block.rows.length === 1) {
+        // Quando o bloco possui exatamente 1 linha, não exibe o nó intermediário 'Linha (Row)'.
+        // Renderiza as Colunas (Cells) diretamente abaixo do Bloco (Bloco -> Coluna -> Elemento).
+        const singleRow = block.rows[0];
+        if (Array.isArray(singleRow.cells)) {
+          singleRow.cells.forEach((cell) => {
+            this._renderCellNode(childrenWrap, cell, singleRow.id, state, level + 1);
+          });
+        }
+      } else {
+        block.rows.forEach((row) => {
+          this._renderRowNode(childrenWrap, row, block.id, state, level + 1);
+        });
+      }
       nodeEl.appendChild(childrenWrap);
     }
 
@@ -207,6 +221,7 @@ export class TreeNavigator {
     const rowEl = document.createElement('div');
     rowEl.className = `nmf-tree-row ${isSelected ? 'is-selected' : ''}`;
     rowEl.style.paddingLeft = `${level * 12 + 6}px`;
+    this._attachTreeDragAndDrop(rowEl, row.id, 'row');
 
     const left = document.createElement('div');
     left.className = 'nmf-tree-row-left';
@@ -286,6 +301,7 @@ export class TreeNavigator {
     const rowEl = document.createElement('div');
     rowEl.className = `nmf-tree-row ${isSelected ? 'is-selected' : ''}`;
     rowEl.style.paddingLeft = `${level * 12 + 6}px`;
+    this._attachTreeDragAndDrop(rowEl, cell.id, 'cell');
 
     const left = document.createElement('div');
     left.className = 'nmf-tree-row-left';
@@ -368,6 +384,7 @@ export class TreeNavigator {
     const rowEl = document.createElement('div');
     rowEl.className = `nmf-tree-row ${isSelected ? 'is-selected' : ''}`;
     rowEl.style.paddingLeft = `${level * 12 + 6}px`;
+    this._attachTreeDragAndDrop(rowEl, atom.id, 'atom');
 
     const left = document.createElement('div');
     left.className = 'nmf-tree-row-left';
@@ -513,35 +530,98 @@ export class TreeNavigator {
     popover.style.top = `${rect.bottom + 4}px`;
     popover.style.left = `${Math.min(window.innerWidth - 180, Math.max(10, rect.left - 60))}px`;
 
-    // Opções baseadas no contexto
+    // Opções de inserção de blocos estruturais
     if (context === 'before_first_block' || context === 'after_block') {
-      const itemBlock = document.createElement('button');
-      itemBlock.type = 'button';
-      itemBlock.className = 'nmf-popover-item';
-      itemBlock.innerHTML = `
+      // 1 Coluna
+      const item1Col = document.createElement('button');
+      item1Col.type = 'button';
+      item1Col.className = 'nmf-popover-item';
+      item1Col.innerHTML = `
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
-        <span>${I18n.t('ui.add_block', 'Adicionar Bloco')}</span>
+        <span>${I18n.t('ui.layout_1col', 'Linha de 1 Coluna')}</span>
       `;
-      itemBlock.addEventListener('click', () => {
+      item1Col.addEventListener('click', () => {
         const newBlock = BlockFactory.createBlock({
           rows: [
             BlockFactory.createRow({
               cells: [
                 BlockFactory.createCell({
-                  children: [BlockFactory.createTextAtom()]
+                  settings: { width: '100%' },
+                  children: []
                 })
               ]
             })
           ]
         });
-        if (context === 'before_first_block') {
-          this.store.insertNodeAt(null, 'first', newBlock);
-        } else {
-          this.store.insertNodeAt(targetId, 'after', newBlock);
-        }
+        this._insertBlockInContext(newBlock, targetId, context);
         popover.remove();
       });
-      popover.appendChild(itemBlock);
+
+      // 2 Colunas
+      const item2Col = document.createElement('button');
+      item2Col.type = 'button';
+      item2Col.className = 'nmf-popover-item';
+      item2Col.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
+        <span>${I18n.t('ui.layout_2col', 'Linha de 2 Colunas')}</span>
+      `;
+      item2Col.addEventListener('click', () => {
+        const newBlock = BlockFactory.createBlock({
+          rows: [
+            BlockFactory.createRow({
+              cells: [
+                BlockFactory.createCell({
+                  settings: { width: '50%' },
+                  children: []
+                }),
+                BlockFactory.createCell({
+                  settings: { width: '50%' },
+                  children: []
+                })
+              ]
+            })
+          ]
+        });
+        this._insertBlockInContext(newBlock, targetId, context);
+        popover.remove();
+      });
+
+      // 3 Colunas
+      const item3Col = document.createElement('button');
+      item3Col.type = 'button';
+      item3Col.className = 'nmf-popover-item';
+      item3Col.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+        <span>${I18n.t('ui.layout_3col', 'Linha de 3 Colunas')}</span>
+      `;
+      item3Col.addEventListener('click', () => {
+        const newBlock = BlockFactory.createBlock({
+          rows: [
+            BlockFactory.createRow({
+              cells: [
+                BlockFactory.createCell({
+                  settings: { width: '33.33%' },
+                  children: []
+                }),
+                BlockFactory.createCell({
+                  settings: { width: '33.33%' },
+                  children: []
+                }),
+                BlockFactory.createCell({
+                  settings: { width: '33.33%' },
+                  children: []
+                })
+              ]
+            })
+          ]
+        });
+        this._insertBlockInContext(newBlock, targetId, context);
+        popover.remove();
+      });
+
+      popover.appendChild(item1Col);
+      popover.appendChild(item2Col);
+      popover.appendChild(item3Col);
     }
 
     document.body.appendChild(popover);
@@ -555,6 +635,157 @@ export class TreeNavigator {
       }
     };
     setTimeout(() => window.addEventListener('click', closeHandler), 10);
+  }
+
+  /**
+   * Insere bloco no contexto apropriado do documento
+   * @param {Object} newBlock
+   * @param {string|null} targetId
+   * @param {string} context
+   * @private
+   */
+  _insertBlockInContext(newBlock, targetId, context) {
+    if (context === 'before_first_block') {
+      const doc = this.store.getDocument();
+      const firstBlock = doc?.blocks?.[0];
+      if (firstBlock) {
+        this.store.insertNodeAt(firstBlock.id, 'before', newBlock);
+      } else {
+        this.store.addBlock(newBlock);
+      }
+    } else {
+      this.store.insertNodeAt(targetId, 'after', newBlock);
+    }
+  }
+
+  /**
+   * Conecta suporte a drag-and-drop na linha da árvore
+   * @param {HTMLElement} rowEl
+   * @param {string} nodeId
+   * @param {string} nodeType ('block' | 'row' | 'cell' | 'atom')
+   * @private
+   */
+  _attachTreeDragAndDrop(rowEl, nodeId, nodeType) {
+    rowEl.draggable = true;
+
+    rowEl.addEventListener('dragstart', (e) => {
+      e.stopPropagation();
+      const payload = { kind: 'move-node', nodeId, nodeType };
+      TreeNavigator._activeDragPayload = payload;
+      e.dataTransfer.setData('application/x-nmf', JSON.stringify(payload));
+      e.dataTransfer.setData('text/plain', `move:${nodeId}`);
+      e.dataTransfer.effectAllowed = 'copyMove';
+      rowEl.classList.add('is-dragging');
+    });
+
+    rowEl.addEventListener('dragend', () => {
+      rowEl.classList.remove('is-dragging');
+      TreeNavigator._activeDragPayload = null;
+      this._clearTreeDropStyles();
+    });
+
+    rowEl.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const activePayload = TreeNavigator._activeDragPayload || (typeof window !== 'undefined' ? window.__nmfActiveDragPayload : null);
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = (activePayload && activePayload.kind === 'move-node') ? 'move' : 'copy';
+      }
+
+      if (activePayload && activePayload.nodeId === nodeId) {
+        return;
+      }
+
+      const rect = rowEl.getBoundingClientRect();
+      const relY = e.clientY - rect.top;
+      const height = rect.height;
+
+      let pos = 'after';
+      if (nodeType === 'cell' && activePayload && activePayload.nodeType === 'atom') {
+        if (relY < height * 0.25) {
+          pos = 'before';
+        } else if (relY > height * 0.75) {
+          pos = 'after';
+        } else {
+          pos = 'inside';
+        }
+      } else if (nodeType === 'block' && activePayload && activePayload.nodeType === 'row') {
+        if (relY < height * 0.25) {
+          pos = 'before';
+        } else if (relY > height * 0.75) {
+          pos = 'after';
+        } else {
+          pos = 'inside';
+        }
+      } else if (nodeType === 'row' && activePayload && activePayload.nodeType === 'cell') {
+        if (relY < height * 0.25) {
+          pos = 'before';
+        } else if (relY > height * 0.75) {
+          pos = 'after';
+        } else {
+          pos = 'inside';
+        }
+      } else {
+        pos = relY < height * 0.5 ? 'before' : 'after';
+      }
+
+      this._clearTreeDropStyles();
+      rowEl.classList.add(`is-drop-${pos}`);
+      rowEl.setAttribute('data-drop-pos', pos);
+    });
+
+    rowEl.addEventListener('dragleave', (e) => {
+      if (!rowEl.contains(e.relatedTarget)) {
+        rowEl.classList.remove('is-drop-before', 'is-drop-after', 'is-drop-inside');
+        rowEl.removeAttribute('data-drop-pos');
+      }
+    });
+
+    rowEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const pos = rowEl.getAttribute('data-drop-pos') || 'after';
+      this._clearTreeDropStyles();
+
+      let sourceId = null;
+      const rawNmf = e.dataTransfer.getData('application/x-nmf');
+      if (rawNmf) {
+        try {
+          const parsed = JSON.parse(rawNmf);
+          sourceId = parsed.nodeId;
+        } catch {}
+      }
+
+      if (!sourceId) {
+        const textPlain = e.dataTransfer.getData('text/plain') || '';
+        if (textPlain.startsWith('move:')) {
+          sourceId = textPlain.replace('move:', '');
+        }
+      }
+
+      if (!sourceId && TreeNavigator._activeDragPayload) {
+        sourceId = TreeNavigator._activeDragPayload.nodeId;
+      }
+
+      if (sourceId && sourceId !== nodeId) {
+        this.store.moveNodeTo(sourceId, nodeId, pos);
+      }
+      TreeNavigator._activeDragPayload = null;
+    });
+  }
+
+  /**
+   * Limpa os estilos visuais de drop da árvore
+   * @private
+   */
+  _clearTreeDropStyles() {
+    if (!this.element) return;
+    const items = this.element.querySelectorAll('.is-drop-before, .is-drop-after, .is-drop-inside');
+    items.forEach((it) => {
+      it.classList.remove('is-drop-before', 'is-drop-after', 'is-drop-inside');
+      it.removeAttribute('data-drop-pos');
+    });
   }
 
   /**

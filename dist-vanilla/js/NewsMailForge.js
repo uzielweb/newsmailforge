@@ -110,6 +110,7 @@ export function mount(target, config = {}) {
   syncInputs(store.getDocument());
   store.subscribe((state) => {
     syncInputs(state.document);
+    studioRoot.classList.toggle('is-preview-mode', state.mode === 'preview');
   });
 
   const instance = {
@@ -122,6 +123,7 @@ export function mount(target, config = {}) {
     undo: () => store.undo(),
     redo: () => store.redo(),
     setViewport: (vp) => store.setViewport(vp),
+    setMode: (m) => store.setMode(m),
     setLocale: (loc) => I18n.setLocale(loc),
     destroy: () => {
       container.innerHTML = '';

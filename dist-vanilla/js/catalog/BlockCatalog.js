@@ -91,18 +91,8 @@ export const BLOCKS = [
                 BlockFactory.createImageAtom({
                   src: 'https://placehold.co/160x45/0f172a/ffffff?text=BRAND',
                   alt: 'Brand',
-                  settings: { width: 140, height: 40, align: 'center' }
-                })
-              ]
-            })
-          ]
-        }),
-        BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [12, 0, 0, 0] } },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '100%', horizontalAlign: 'center' },
-              children: [
+                  settings: { width: 140, height: 40, align: 'center', spacing: { margin: [0, 0, 12, 0] } }
+                }),
                 BlockFactory.createMenuAtom({
                   items: [
                     { label: 'Coleção', url: 'https://example.com' },
@@ -133,41 +123,41 @@ export const BLOCKS = [
       },
       rows: [
         BlockFactory.createRow({
-          settings: { backgroundColor: '#0f172a', spacing: { padding: [8, 16, 8, 16] } },
+          settings: { gap: 0 },
           cells: [
             BlockFactory.createCell({
               settings: { width: '100%', horizontalAlign: 'center' },
               children: [
                 BlockFactory.createTextAtom({
-                  value: '<p style="margin: 0; font-size: 13px; color: #ffffff; text-align: center;">⚡ Frete Grátis para todo o Brasil em compras acima de R$ 199. Aproveite!</p>'
-                })
-              ]
-            })
-          ]
-        }),
-        BlockFactory.createRow({
-          settings: { spacing: { padding: [16, 24, 0, 24] }, gap: 16 },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '40%', verticalAlign: 'middle' },
-              children: [
-                BlockFactory.createImageAtom({
-                  src: 'https://placehold.co/130x36/2563eb/ffffff?text=STORE',
-                  alt: 'Store',
-                  settings: { width: 110, height: 32, align: 'left' }
-                })
-              ]
-            }),
-            BlockFactory.createCell({
-              settings: { width: '60%', verticalAlign: 'middle', horizontalAlign: 'right' },
-              children: [
-                BlockFactory.createMenuAtom({
-                  items: [
-                    { label: 'Categorias', url: 'https://example.com' },
-                    { label: 'Ofertas', url: 'https://example.com' },
-                    { label: 'Ajuda', url: 'https://example.com' }
-                  ],
-                  settings: { align: 'right', itemGap: 16 }
+                  value: '<div style="background-color: #0f172a; padding: 8px 16px; margin: 0 0 16px 0;"><p style="margin: 0; font-size: 13px; color: #ffffff; text-align: center;">⚡ Frete Grátis para todo o Brasil em compras acima de R$ 199. Aproveite!</p></div>'
+                }),
+                BlockFactory.createRow({
+                  settings: { spacing: { padding: [0, 24, 0, 24] }, gap: 16, collapseOnMobile: false },
+                  cells: [
+                    BlockFactory.createCell({
+                      settings: { width: '40%', verticalAlign: 'middle' },
+                      children: [
+                        BlockFactory.createImageAtom({
+                          src: 'https://placehold.co/130x36/2563eb/ffffff?text=STORE',
+                          alt: 'Store',
+                          settings: { width: 110, height: 32, align: 'left' }
+                        })
+                      ]
+                    }),
+                    BlockFactory.createCell({
+                      settings: { width: '60%', verticalAlign: 'middle', horizontalAlign: 'right' },
+                      children: [
+                        BlockFactory.createMenuAtom({
+                          items: [
+                            { label: 'Categorias', url: 'https://example.com' },
+                            { label: 'Ofertas', url: 'https://example.com' },
+                            { label: 'Ajuda', url: 'https://example.com' }
+                          ],
+                          settings: { align: 'right', itemGap: 16 }
+                        })
+                      ]
+                    })
+                  ]
                 })
               ]
             })
@@ -321,26 +311,16 @@ export const BLOCKS = [
       },
       rows: [
         BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '100%' },
-              children: [
-                BlockFactory.createImageAtom({
-                  src: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80',
-                  alt: 'Artigo Panorâmico',
-                  settings: { width: 552, height: 260, borderRadius: 6, align: 'center' }
-                })
-              ]
-            })
-          ]
-        }),
-        BlockFactory.createRow({
           settings: { gap: 0 },
           cells: [
             BlockFactory.createCell({
               settings: { width: '100%', horizontalAlign: 'left' },
               children: [
+                BlockFactory.createImageAtom({
+                  src: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80',
+                  alt: 'Artigo Panorâmico',
+                  settings: { width: 552, height: 260, borderRadius: 6, align: 'center', spacing: { margin: [0, 0, 16, 0] } }
+                }),
                 BlockFactory.createTextAtom({
                   value: '<h3 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.3;">Como Proteger Seus E-mails Contra Quebras no Word Engine</h3><p style="margin: 0 0 14px 0; font-size: 15px; color: #475569; line-height: 1.6;">O Microsoft Outlook renderiza tabelas utilizando a Word Rendering Engine. Ao implementar Ghost Tables e Gap Spacer Columns, garantimos que nenhum subpixel vazará no fundo.</p><p style="margin: 0; font-size: 15px; color: #475569; line-height: 1.6;">Descubra os métodos cirúrgicos aplicados nas maiores operações corporativas do país.</p>'
                 })
@@ -381,7 +361,7 @@ export const BLOCKS = [
               settings: { width: '55%', verticalAlign: 'middle', horizontalAlign: 'left' },
               children: [
                 BlockFactory.createTextAtom({
-                  value: '<h4 style="margin: 0 0 8px 0; font-size: 19px; font-weight: 700; color: #0f172a; line-height: 1.3;">Experiência Unificada e Ágil</h4><p style="margin: 0 0 12px 0; font-size: 14px; color: #475569; line-height: 1.55;">Crie layouts dinâmicos com total controle de proporções e espaçamentos.</p><a href="https://example.com" style="color: #2563eb; font-weight: 700; font-size: 14px; text-decoration: none;">Ler Mais &rarr;</a>'
+                  value: '<h4 style="margin: 0 0 8px 0; font-size: 19px; font-weight: 700; color: #0f172a; line-height: 1.3;">Experiência Unificada e Ágil</h4><p style="margin: 0 0 12px 0; font-size: 14px; color: #475569; line-height: 1.55;">Crie layouts dinâmicos com total controle de proporções e espaçamentos.</p><a href="https://example.com" style="color: #2563eb; font-weight: 700; font-size: 14px; text-decoration: none;">Ler Mais →</a>'
                 })
               ]
             })
@@ -572,73 +552,83 @@ export const BLOCKS = [
         spacing: { padding: [16, 24, 16, 24] }
       },
       rows: [
-        // Linha 1: Segue estritamente DIRETRIZES-CONSTRUCAO-EMM-OUTLOOK.md (valign=middle duplo + zero horizontal padding na td do ícone)
         BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+          settings: { gap: 0 },
           cells: [
             BlockFactory.createCell({
-              settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
+              settings: { width: '100%', horizontalAlign: 'left' },
               children: [
-                BlockFactory.createImageAtom({
-                  src: 'https://placehold.co/36x36/2563eb/ffffff?text=%E2%9C%93',
-                  alt: 'Ícone 1',
-                  settings: { width: 34, height: 34, align: 'center' }
-                })
-              ]
-            }),
-            BlockFactory.createCell({
-              settings: { width: 'auto', verticalAlign: 'middle', horizontalAlign: 'left', spacing: { padding: [0, 0, 0, 16] } },
-              children: [
-                BlockFactory.createTextAtom({
-                  value: '<p style="margin: 0; font-size: 16px; color: #1e293b; line-height: 1.45;"><strong>Entrega Instantânea:</strong> Seus destinatários recebem e-mails leves e responsivos.</p>'
-                })
-              ]
-            })
-          ]
-        }),
-        // Linha 2
-        BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
-              children: [
-                BlockFactory.createImageAtom({
-                  src: 'https://placehold.co/36x36/10b981/ffffff?text=%E2%9C%93',
-                  alt: 'Ícone 2',
-                  settings: { width: 34, height: 34, align: 'center' }
-                })
-              ]
-            }),
-            BlockFactory.createCell({
-              settings: { width: 'auto', verticalAlign: 'middle', horizontalAlign: 'left', spacing: { padding: [0, 0, 0, 16] } },
-              children: [
-                BlockFactory.createTextAtom({
-                  value: '<p style="margin: 0; font-size: 16px; color: #1e293b; line-height: 1.45;"><strong>Zero Frestas:</strong> Imagens travadas matematicamente sem linhas de subpixel.</p>'
-                })
-              ]
-            })
-          ]
-        }),
-        // Linha 3
-        BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [0, 0, 8, 0] } },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
-              children: [
-                BlockFactory.createImageAtom({
-                  src: 'https://placehold.co/36x36/f59e0b/ffffff?text=%E2%9C%93',
-                  alt: 'Ícone 3',
-                  settings: { width: 34, height: 34, align: 'center' }
-                })
-              ]
-            }),
-            BlockFactory.createCell({
-              settings: { width: 'auto', verticalAlign: 'middle', horizontalAlign: 'left', spacing: { padding: [0, 0, 0, 16] } },
-              children: [
-                BlockFactory.createTextAtom({
-                  value: '<p style="margin: 0; font-size: 16px; color: #1e293b; line-height: 1.45;"><strong>Botões Bulletproof:</strong> Renderização perfeita com tecnologia VML no Windows.</p>'
+                // Linha 1
+                BlockFactory.createRow({
+                  settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+                  cells: [
+                    BlockFactory.createCell({
+                      settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
+                      children: [
+                        BlockFactory.createImageAtom({
+                          src: 'https://placehold.co/36x36/2563eb/ffffff?text=%E2%9C%93',
+                          alt: 'Ícone 1',
+                          settings: { width: 34, height: 34, align: 'center' }
+                        })
+                      ]
+                    }),
+                    BlockFactory.createCell({
+                      settings: { width: 'auto', verticalAlign: 'middle', horizontalAlign: 'left', spacing: { padding: [0, 0, 0, 16] } },
+                      children: [
+                        BlockFactory.createTextAtom({
+                          value: '<p style="margin: 0; font-size: 16px; color: #1e293b; line-height: 1.45;"><strong>Entrega Instantânea:</strong> Seus destinatários recebem e-mails leves e responsivos.</p>'
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                // Linha 2
+                BlockFactory.createRow({
+                  settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+                  cells: [
+                    BlockFactory.createCell({
+                      settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
+                      children: [
+                        BlockFactory.createImageAtom({
+                          src: 'https://placehold.co/36x36/10b981/ffffff?text=%E2%9C%93',
+                          alt: 'Ícone 2',
+                          settings: { width: 34, height: 34, align: 'center' }
+                        })
+                      ]
+                    }),
+                    BlockFactory.createCell({
+                      settings: { width: 'auto', verticalAlign: 'middle', horizontalAlign: 'left', spacing: { padding: [0, 0, 0, 16] } },
+                      children: [
+                        BlockFactory.createTextAtom({
+                          value: '<p style="margin: 0; font-size: 16px; color: #1e293b; line-height: 1.45;"><strong>Zero Frestas:</strong> Imagens travadas matematicamente sem linhas de subpixel.</p>'
+                        })
+                      ]
+                    })
+                  ]
+                }),
+                // Linha 3
+                BlockFactory.createRow({
+                  settings: { gap: 0, spacing: { padding: [0, 0, 8, 0] } },
+                  cells: [
+                    BlockFactory.createCell({
+                      settings: { width: '48px', verticalAlign: 'middle', horizontalAlign: 'center', spacing: { padding: [0, 0, 0, 0] } },
+                      children: [
+                        BlockFactory.createImageAtom({
+                          src: 'https://placehold.co/36x36/f59e0b/ffffff?text=%E2%9C%93',
+                          alt: 'Ícone 3',
+                          settings: { width: 34, height: 34, align: 'center' }
+                        })
+                      ]
+                    }),
+                    BlockFactory.createCell({
+                      settings: { width: 'auto', verticalAlign: 'middle', horizontalAlign: 'left', spacing: { padding: [0, 0, 0, 16] } },
+                      children: [
+                        BlockFactory.createTextAtom({
+                          value: '<p style="margin: 0; font-size: 16px; color: #1e293b; line-height: 1.45;"><strong>Botões Bulletproof:</strong> Renderização perfeita com tecnologia VML no Windows.</p>'
+                        })
+                      ]
+                    })
+                  ]
                 })
               ]
             })
@@ -710,50 +700,50 @@ export const BLOCKS = [
       },
       rows: [
         BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
+          settings: { gap: 0 },
           cells: [
             BlockFactory.createCell({
               settings: { width: '100%', horizontalAlign: 'center' },
               children: [
                 BlockFactory.createTextAtom({
-                  value: '<h3 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800; color: #0f172a; text-align: center;">Escolha a Melhor Opção Para Você</h3><p style="margin: 0; font-size: 15px; color: #64748b; text-align: center;">Teste gratuitamente por 14 dias ou agende uma demonstração personalizada.</p>',
+                  value: '<h3 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800; color: #0f172a; text-align: center;">Escolha a Melhor Opção Para Você</h3><p style="margin: 0 0 16px 0; font-size: 15px; color: #64748b; text-align: center;">Teste gratuitamente por 14 dias ou agende uma demonstração personalizada.</p>',
                   settings: { align: 'center' }
-                })
-              ]
-            })
-          ]
-        }),
-        BlockFactory.createRow({
-          settings: { gap: 16, collapseOnMobile: false },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '50%', horizontalAlign: 'right' },
-              children: [
-                BlockFactory.createButtonAtom({
-                  value: 'Teste Grátis',
-                  link: 'https://example.com/test',
-                  settings: {
-                    align: 'right',
-                    backgroundColor: '#2563eb',
-                    color: '#ffffff',
-                    spacing: { padding: [12, 20, 12, 20] }
-                  }
-                })
-              ]
-            }),
-            BlockFactory.createCell({
-              settings: { width: '50%', horizontalAlign: 'left' },
-              children: [
-                BlockFactory.createButtonAtom({
-                  value: 'Falar com Consultor',
-                  link: 'https://example.com/demo',
-                  settings: {
-                    align: 'left',
-                    backgroundColor: '#ffffff',
-                    color: '#0f172a',
-                    border: { width: 1, style: 'solid', color: '#cbd5e1' },
-                    spacing: { padding: [12, 20, 12, 20] }
-                  }
+                }),
+                BlockFactory.createRow({
+                  settings: { gap: 16, collapseOnMobile: false },
+                  cells: [
+                    BlockFactory.createCell({
+                      settings: { width: '50%', horizontalAlign: 'right' },
+                      children: [
+                        BlockFactory.createButtonAtom({
+                          value: 'Teste Grátis',
+                          link: 'https://example.com/test',
+                          settings: {
+                            align: 'right',
+                            backgroundColor: '#2563eb',
+                            color: '#ffffff',
+                            spacing: { padding: [12, 20, 12, 20] }
+                          }
+                        })
+                      ]
+                    }),
+                    BlockFactory.createCell({
+                      settings: { width: '50%', horizontalAlign: 'left' },
+                      children: [
+                        BlockFactory.createButtonAtom({
+                          value: 'Falar com Consultor',
+                          link: 'https://example.com/demo',
+                          settings: {
+                            align: 'left',
+                            backgroundColor: '#ffffff',
+                            color: '#0f172a',
+                            border: { width: 1, style: 'solid', color: '#cbd5e1' },
+                            spacing: { padding: [12, 20, 12, 20] }
+                          }
+                        })
+                      ]
+                    })
+                  ]
                 })
               ]
             })
@@ -1141,24 +1131,14 @@ export const BLOCKS = [
       },
       rows: [
         BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [0, 0, 16, 0] } },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '100%', horizontalAlign: 'center' },
-              children: [
-                BlockFactory.createSocialAtom({
-                  settings: { align: 'center', iconTheme: 'light', iconSize: 26, iconGap: 18 }
-                })
-              ]
-            })
-          ]
-        }),
-        BlockFactory.createRow({
           settings: { gap: 0 },
           cells: [
             BlockFactory.createCell({
               settings: { width: '100%', horizontalAlign: 'center' },
               children: [
+                BlockFactory.createSocialAtom({
+                  settings: { align: 'center', iconTheme: 'light', iconSize: 26, iconGap: 18, spacing: { margin: [0, 0, 16, 0] } }
+                }),
                 BlockFactory.createTextAtom({
                   value: '<p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8; text-align: center; line-height: 1.5;">Você está recebendo este e-mail porque assinou nossa newsletter corporativa.<br>News Mail Forge Inc. • Av. Paulista, 1000 - São Paulo/SP</p><p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;"><a href="https://example.com/preferences" style="color: #cbd5e1; text-decoration: underline;">Gerenciar Preferências</a> • <a href="https://example.com/unsubscribe" style="color: #cbd5e1; text-decoration: underline;">Descadastrar-se</a></p>',
                   settings: { align: 'center', color: '#94a3b8' }
@@ -1185,40 +1165,40 @@ export const BLOCKS = [
       },
       rows: [
         BlockFactory.createRow({
-          settings: { gap: 16, collapseOnMobile: true },
+          settings: { gap: 0 },
           cells: [
             BlockFactory.createCell({
-              settings: { width: '33.33%', horizontalAlign: 'left' },
+              settings: { width: '100%', horizontalAlign: 'left' },
               children: [
-                BlockFactory.createTextAtom({
-                  value: '<strong style="display: block; font-size: 14px; color: #0f172a; margin-bottom: 8px;">PRODUTOS</strong><p style="margin: 0; font-size: 13px; line-height: 1.8;"><a href="https://example.com" style="color: #64748b; text-decoration: none;">SDK Vanilla JS</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">PHP Bridge Adapter</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Modelos Prontos</a></p>'
-                })
-              ]
-            }),
-            BlockFactory.createCell({
-              settings: { width: '33.33%', horizontalAlign: 'left' },
-              children: [
-                BlockFactory.createTextAtom({
-                  value: '<strong style="display: block; font-size: 14px; color: #0f172a; margin-bottom: 8px;">RECURSOS</strong><p style="margin: 0; font-size: 13px; line-height: 1.8;"><a href="https://example.com" style="color: #64748b; text-decoration: none;">Documentação</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Guia Outlook MSO</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Changelog</a></p>'
-                })
-              ]
-            }),
-            BlockFactory.createCell({
-              settings: { width: '33.33%', horizontalAlign: 'left' },
-              children: [
-                BlockFactory.createTextAtom({
-                  value: '<strong style="display: block; font-size: 14px; color: #0f172a; margin-bottom: 8px;">INSTITUCIONAL</strong><p style="margin: 0; font-size: 13px; line-height: 1.8;"><a href="https://example.com" style="color: #64748b; text-decoration: none;">Termos de Uso</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Privacidade LGPD</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Fale Conosco</a></p>'
-                })
-              ]
-            })
-          ]
-        }),
-        BlockFactory.createRow({
-          settings: { gap: 0, spacing: { padding: [16, 0, 0, 0] } },
-          cells: [
-            BlockFactory.createCell({
-              settings: { width: '100%', horizontalAlign: 'center' },
-              children: [
+                BlockFactory.createRow({
+                  settings: { gap: 16, collapseOnMobile: true, spacing: { padding: [0, 0, 16, 0] } },
+                  cells: [
+                    BlockFactory.createCell({
+                      settings: { width: '33.33%', horizontalAlign: 'left' },
+                      children: [
+                        BlockFactory.createTextAtom({
+                          value: '<strong style="display: block; font-size: 14px; color: #0f172a; margin-bottom: 8px;">PRODUTOS</strong><p style="margin: 0; font-size: 13px; line-height: 1.8;"><a href="https://example.com" style="color: #64748b; text-decoration: none;">SDK Vanilla JS</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">PHP Bridge Adapter</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Modelos Prontos</a></p>'
+                        })
+                      ]
+                    }),
+                    BlockFactory.createCell({
+                      settings: { width: '33.33%', horizontalAlign: 'left' },
+                      children: [
+                        BlockFactory.createTextAtom({
+                          value: '<strong style="display: block; font-size: 14px; color: #0f172a; margin-bottom: 8px;">RECURSOS</strong><p style="margin: 0; font-size: 13px; line-height: 1.8;"><a href="https://example.com" style="color: #64748b; text-decoration: none;">Documentação</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Guia Outlook MSO</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Changelog</a></p>'
+                        })
+                      ]
+                    }),
+                    BlockFactory.createCell({
+                      settings: { width: '33.33%', horizontalAlign: 'left' },
+                      children: [
+                        BlockFactory.createTextAtom({
+                          value: '<strong style="display: block; font-size: 14px; color: #0f172a; margin-bottom: 8px;">INSTITUCIONAL</strong><p style="margin: 0; font-size: 13px; line-height: 1.8;"><a href="https://example.com" style="color: #64748b; text-decoration: none;">Termos de Uso</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Privacidade LGPD</a><br><a href="https://example.com" style="color: #64748b; text-decoration: none;">Fale Conosco</a></p>'
+                        })
+                      ]
+                    })
+                  ]
+                }),
                 BlockFactory.createDividerAtom({ settings: { color: '#f1f5f9', height: 1 } }),
                 BlockFactory.createTextAtom({
                   value: '<p style="margin: 12px 0 0 0; font-size: 12px; color: #94a3b8; text-align: center;">© 2026 News Mail Forge. Todos os direitos reservados. Licença MIT.</p>',

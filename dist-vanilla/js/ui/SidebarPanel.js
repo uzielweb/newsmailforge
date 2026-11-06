@@ -1,7 +1,7 @@
 /**
  * NewsMailForge - SidebarPanel
  * Painel lateral esquerdo com abas duplas:
- * 1. Block Library (8 categorias + Flyout Drawer lateral deslizante com cards SVG)
+ * 1. Block Library (Estruturas, Elementos Básicos & Catálogo Modular com busca em tempo real)
  * 2. Component Tree (Árvore hierárquica sincronizada)
  * UTF-8 sem BOM (No BOM)
  *
@@ -10,6 +10,7 @@
  */
 
 import { I18n } from '../i18n/I18n.js';
+import { BlockFactory } from '../core/BlockFactory.js';
 import { CATEGORIES, BLOCKS } from '../catalog/BlockCatalog.js';
 
 export class SidebarPanel {
@@ -23,6 +24,9 @@ export class SidebarPanel {
     this.element = null;
     this.drawerEl = null;
     this.isDrawerOpen = false;
+    this.searchQuery = '';
+    this.selectedCategory = 'all';
+    this.customColWidths = [30, 70];
 
     this._init();
   }
@@ -102,37 +106,12 @@ export class SidebarPanel {
     const content = document.createElement('div');
     content.className = 'nmf-sidebar-content';
 
-    // Container Library (Categorias)
+    // Container Library (Construtor visual direto sempre visível)
     const libContainer = document.createElement('div');
-    libContainer.className = 'nmf-category-list';
+    libContainer.className = 'nmf-library-wrap';
     libContainer.style.display = currentTab === 'library' ? 'flex' : 'none';
 
-    CATEGORIES.forEach((cat) => {
-      const catBlocks = BLOCKS.filter((b) => b.category === cat.id);
-      const item = document.createElement('div');
-      item.className = 'nmf-category-item';
-      item.setAttribute('data-category-id', cat.id);
-
-      const catName = I18n.t(`cat.${cat.id}`, I18n.t(cat.nameKey, cat.id));
-
-      item.innerHTML = `
-        <div class="nmf-category-left">
-          <div class="nmf-category-icon">${this._getCategoryIconSvg(cat.icon)}</div>
-          <span>${catName}</span>
-        </div>
-        <span class="nmf-category-badge">${catBlocks.length}</span>
-      `;
-
-      item.addEventListener('mouseenter', () => {
-        this.openDrawer(cat.id);
-      });
-
-      item.addEventListener('click', () => {
-        this.openDrawer(cat.id);
-      });
-
-      libContainer.appendChild(item);
-    });
+    this._buildLibrarySections(libContainer);
 
     // Container Tree (Monta o TreeNavigator)
     const treeContainer = document.createElement('div');
@@ -150,140 +129,803 @@ export class SidebarPanel {
     this.element.appendChild(tabs);
     this.element.appendChild(content);
 
-    // Cria e anexa o Flyout Drawer lateral deslizante
-    this._createFlyoutDrawer();
+    // Impede cursor de proibido (not-allowed) enquanto o usuário inicia o arraste sobre a própria sidebar rumo ao palco
+    this.element.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    });
+    this.element.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    });
   }
 
   /**
-   * Cria o elemento do Flyout Drawer
+   * Constrói as seções da Biblioteca na sidebar
    * @private
+   * @param {HTMLElement} container
    */
-  _createFlyoutDrawer() {
-    if (this.drawerEl) {
-      this.drawerEl.remove();
-    }
-
-    const drawer = document.createElement('div');
-    drawer.className = 'nmf-flyout-drawer';
-
-    const header = document.createElement('div');
-    header.className = 'nmf-drawer-header';
-
-    const title = document.createElement('span');
-    title.className = 'nmf-drawer-title';
-    title.textContent = I18n.t('ui.tabs.library', 'Biblioteca de Blocos');
-
-    const closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.className = 'nmf-drawer-close';
-    closeBtn.title = I18n.t('ui.drawer_close', 'Fechar Gaveta');
-    closeBtn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
+  _buildLibrarySections(container) {
+    // 0. Campo de busca em tempo real no topo
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'nmf-library-search-wrap';
+    searchWrap.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
     `;
-    closeBtn.addEventListener('click', () => this.closeDrawer());
+    const searchInput = document.createElement('input');
+    searchInput.type = 'search';
+    searchInput.className = 'nmf-library-search';
+    searchInput.placeholder = I18n.t('ui.search_blocks', 'Buscar linhas prontas ou elementos...');
+    searchInput.value = this.searchQuery;
+    searchInput.addEventListener('input', (e) => {
+      this.searchQuery = e.target.value.toLowerCase().trim();
+      this._renderCatalogList();
+      this._filterQuickItems();
+    });
+    searchWrap.appendChild(searchInput);
+    container.appendChild(searchWrap);
 
-    header.appendChild(title);
-    header.appendChild(closeBtn);
+    // 1. Seção 1: Estruturas & Colunas
+    const secStructures = document.createElement('div');
+    secStructures.className = 'nmf-library-section';
+    secStructures.innerHTML = `
+      <div class="nmf-library-section-title">${I18n.t('ui.sec_structures', 'Linhas & Colunas (Estruturas)')}</div>
+    `;
 
-    const body = document.createElement('div');
-    body.className = 'nmf-drawer-body';
+    const gridStructures = document.createElement('div');
+    gridStructures.className = 'nmf-quick-grid';
 
-    drawer.appendChild(header);
-    drawer.appendChild(body);
+    const STRUCTURE_ITEMS = [
+      {
+        id: '100',
+        labelKey: 'ui.layout_1col',
+        defaultLabel: '1 Coluna',
+        svg: '<svg width="28" height="16" viewBox="0 0 28 16" fill="none"><rect x="0.5" y="0.5" width="27" height="15" rx="2" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/></svg>'
+      },
+      {
+        id: '50-50',
+        labelKey: 'ui.layout_2col',
+        defaultLabel: '2 Colunas',
+        svg: '<svg width="28" height="16" viewBox="0 0 28 16" fill="none"><rect x="0.5" y="0.5" width="12.5" height="15" rx="2" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="15" y="0.5" width="12.5" height="15" rx="2" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/></svg>'
+      },
+      {
+        id: '33-33-33',
+        labelKey: 'ui.layout_3col',
+        defaultLabel: '3 Colunas',
+        svg: '<svg width="28" height="16" viewBox="0 0 28 16" fill="none"><rect x="0.5" y="0.5" width="7.6" height="15" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="10.2" y="0.5" width="7.6" height="15" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="19.9" y="0.5" width="7.6" height="15" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/></svg>'
+      },
+      {
+        id: '30-70',
+        labelKey: 'ui.layout_2col_30_70',
+        defaultLabel: 'Barra 30/70',
+        svg: '<svg width="28" height="16" viewBox="0 0 28 16" fill="none"><rect x="0.5" y="0.5" width="7.5" height="15" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="10" y="0.5" width="17.5" height="15" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/></svg>'
+      },
+      {
+        id: '70-30',
+        labelKey: 'ui.layout_2col_70_30',
+        defaultLabel: 'Barra 70/30',
+        svg: '<svg width="28" height="16" viewBox="0 0 28 16" fill="none"><rect x="0.5" y="0.5" width="17.5" height="15" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="20" y="0.5" width="7.5" height="15" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/></svg>'
+      },
+      {
+        id: '25-25-25-25',
+        labelKey: 'ui.layout_4col',
+        defaultLabel: '4 Colunas',
+        svg: '<svg width="28" height="16" viewBox="0 0 28 16" fill="none"><rect x="0.5" y="0.5" width="5.5" height="15" rx="1" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="7.6" y="0.5" width="5.5" height="15" rx="1" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="14.8" y="0.5" width="5.5" height="15" rx="1" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/><rect x="22" y="0.5" width="5.5" height="15" rx="1" fill="currentColor" fill-opacity="0.12" stroke="currentColor"/></svg>'
+      }
+    ];
 
-    this.drawerEl = drawer;
-    this.drawerTitle = title;
-    this.drawerBody = body;
+    STRUCTURE_ITEMS.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'nmf-quick-card';
+      card.draggable = true;
+      card.setAttribute('data-structure-id', item.id);
+      const label = I18n.t(item.labelKey, item.defaultLabel);
+      card.title = label;
+      card.innerHTML = `
+        <div class="nmf-quick-card-icon">${item.svg}</div>
+        <span class="nmf-quick-card-label">${label}</span>
+      `;
 
-    // Fecha a gaveta se o usuário mover o cursor para fora da sidebar/drawer
-    drawer.addEventListener('mouseleave', (e) => {
-      // Se não estiver indo para a sidebar
-      const toEl = e.relatedTarget;
-      if (!this.element.contains(toEl)) {
-        this.closeDrawer();
+      card.addEventListener('dragstart', (e) => {
+        const payload = { kind: 'structure', layout: item.id };
+        window.__nmfActiveDragPayload = payload;
+        e.dataTransfer.setData('application/x-nmf', JSON.stringify(payload));
+        e.dataTransfer.setData('application/x-nmf-structure', item.id);
+        e.dataTransfer.setData('text/plain', 'structure:' + item.id);
+        e.dataTransfer.effectAllowed = 'copyMove';
+      });
+
+      card.addEventListener('dragend', () => {
+        window.__nmfActiveDragPayload = null;
+      });
+
+      card.addEventListener('click', () => {
+        this._handleStructureClick(item.id);
+      });
+
+      gridStructures.appendChild(card);
+    });
+
+    secStructures.appendChild(gridStructures);
+    this._buildCustomColBuilder(secStructures);
+    container.appendChild(secStructures);
+
+    // 2. Seção 2: Elementos Básicos
+    const secElements = document.createElement('div');
+    secElements.className = 'nmf-library-section';
+    secElements.innerHTML = `
+      <div class="nmf-library-section-title">${I18n.t('ui.sec_elements', 'Elementos Básicos')}</div>
+    `;
+
+    const gridElements = document.createElement('div');
+    gridElements.className = 'nmf-quick-grid';
+
+    const ATOM_ITEMS = [
+      {
+        type: 'text',
+        svg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>'
+      },
+      {
+        type: 'button',
+        svg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="4"></rect><line x1="8" y1="12" x2="16" y2="12"></line></svg>'
+      },
+      {
+        type: 'image',
+        svg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>'
+      },
+      {
+        type: 'divider',
+        svg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="3 3"></line></svg>'
+      },
+      {
+        type: 'spacer',
+        svg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 8 12 3 17 8"></polyline><polyline points="7 16 12 21 17 16"></polyline><line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="2 2"></line></svg>'
+      },
+      {
+        type: 'menu',
+        svg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>'
+      },
+      {
+        type: 'social',
+        svg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
+      }
+    ];
+
+    ATOM_ITEMS.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'nmf-quick-card';
+      card.draggable = true;
+      card.setAttribute('data-atom-type', item.type);
+      const label = I18n.t(`atom.${item.type}`, item.type);
+      card.title = label;
+      card.innerHTML = `
+        <div class="nmf-quick-card-icon">${item.svg}</div>
+        <span class="nmf-quick-card-label">${label}</span>
+      `;
+
+      card.addEventListener('dragstart', (e) => {
+        const payload = { kind: 'atom', atomType: item.type };
+        window.__nmfActiveDragPayload = payload;
+        e.dataTransfer.setData('application/x-nmf', JSON.stringify(payload));
+        e.dataTransfer.setData('application/x-nmf-atom', item.type);
+        e.dataTransfer.setData('text/plain', 'atom:' + item.type);
+        e.dataTransfer.effectAllowed = 'copyMove';
+      });
+
+      card.addEventListener('dragend', () => {
+        window.__nmfActiveDragPayload = null;
+      });
+
+      card.addEventListener('click', () => {
+        this._handleAtomClick(item.type);
+      });
+
+      gridElements.appendChild(card);
+    });
+
+    secElements.appendChild(gridElements);
+    container.appendChild(secElements);
+
+    // 3. Seção 3: Blocos Prontos Modulares
+    const secBlocks = document.createElement('div');
+    secBlocks.className = 'nmf-library-section';
+    secBlocks.innerHTML = `
+      <div class="nmf-library-section-title">${I18n.t('ui.sec_ready_blocks', 'Linhas Prontas (Modelos)')}</div>
+    `;
+
+    // Barra de pílulas de filtro
+    const pillsContainer = document.createElement('div');
+    pillsContainer.className = 'nmf-category-pills';
+
+    const btnAll = document.createElement('button');
+    btnAll.type = 'button';
+    btnAll.className = `nmf-category-pill ${this.selectedCategory === 'all' ? 'is-active' : ''}`;
+    btnAll.textContent = I18n.t('ui.cat_all', 'Todos');
+    btnAll.addEventListener('click', () => {
+      this.selectedCategory = 'all';
+      this._updatePillStates(pillsContainer);
+      this._renderCatalogList();
+    });
+    pillsContainer.appendChild(btnAll);
+
+    CATEGORIES.forEach((cat) => {
+      const pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = `nmf-category-pill ${this.selectedCategory === cat.id ? 'is-active' : ''}`;
+      pill.setAttribute('data-category-id', cat.id);
+      pill.textContent = I18n.t(`cat.${cat.id}`, I18n.t(cat.nameKey, cat.id));
+      pill.addEventListener('click', () => {
+        this.selectedCategory = cat.id;
+        this._updatePillStates(pillsContainer);
+        this._renderCatalogList();
+      });
+      pillsContainer.appendChild(pill);
+    });
+
+    secBlocks.appendChild(pillsContainer);
+
+    // Lista de cartões de blocos
+    const catalogList = document.createElement('div');
+    catalogList.className = 'nmf-catalog-list';
+    secBlocks.appendChild(catalogList);
+
+    container.appendChild(secBlocks);
+
+    this.pillsContainer = pillsContainer;
+    this.catalogList = catalogList;
+    this.gridStructures = gridStructures;
+    this.gridElements = gridElements;
+
+    this._renderCatalogList();
+  }
+
+  /**
+   * Atualiza as classes ativas das pílulas de categoria
+   * @private
+   * @param {HTMLElement} container
+   */
+  _updatePillStates(container) {
+    if (!container) return;
+    const pills = container.querySelectorAll('.nmf-category-pill');
+    pills.forEach((p) => {
+      const cat = p.getAttribute('data-category-id') || 'all';
+      if (cat === this.selectedCategory) {
+        p.classList.add('is-active');
+      } else {
+        p.classList.remove('is-active');
       }
     });
   }
 
   /**
-   * Abre a gaveta exibindo os blocos de uma categoria
-   * @param {string} categoryId
+   * Renderiza a lista de blocos do catálogo com base nos filtros
+   * @private
    */
-  openDrawer(categoryId) {
-    if (!this.drawerEl) return;
+  _renderCatalogList() {
+    if (!this.catalogList) return;
+    this.catalogList.innerHTML = '';
 
-    this.store.setActiveCategory(categoryId);
+    const q = this.searchQuery;
+    const cat = this.selectedCategory;
 
-    // Atualiza classe ativa nas categorias
-    const items = this.element.querySelectorAll('.nmf-category-item');
-    items.forEach((it) => {
-      if (it.getAttribute('data-category-id') === categoryId) {
-        it.classList.add('is-active');
-      } else {
-        it.classList.remove('is-active');
+    const filtered = BLOCKS.filter((b) => {
+      if (cat !== 'all' && b.category !== cat) {
+        return false;
       }
+      if (q) {
+        const name = (I18n.t(b.nameKey, b.id) || '').toLowerCase();
+        const desc = (I18n.t(b.descriptionKey, '') || '').toLowerCase();
+        const id = (b.id || '').toLowerCase();
+        if (!name.includes(q) && !desc.includes(q) && !id.includes(q)) {
+          return false;
+        }
+      }
+      return true;
     });
 
-    const cat = CATEGORIES.find((c) => c.id === categoryId);
-    const catName = cat ? I18n.t(`cat.${cat.id}`, I18n.t(cat.nameKey, cat.id)) : categoryId;
+    if (filtered.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'nmf-catalog-empty';
+      empty.style.padding = '16px 8px';
+      empty.style.textAlign = 'center';
+      empty.style.color = 'var(--nmf-text-tertiary)';
+      empty.style.fontSize = '11px';
+      empty.textContent = I18n.t('ui.no_blocks_found', 'Nenhuma linha encontrada');
+      this.catalogList.appendChild(empty);
+      return;
+    }
 
-    this.drawerTitle.textContent = catName;
-    this.drawerBody.innerHTML = '';
-
-    const blocks = BLOCKS.filter((b) => b.category === categoryId);
-
-    blocks.forEach((b) => {
+    filtered.forEach((b) => {
       const card = document.createElement('div');
       card.className = 'nmf-block-card';
       card.draggable = true;
+      card.setAttribute('data-block-id', b.id);
 
-      const blockName = I18n.t(b.nameKey, b.id);
+      const title = I18n.t(b.nameKey, b.id);
+      const desc = I18n.t(b.descriptionKey, '');
 
       card.innerHTML = `
-        <div class="nmf-block-preview">${b.thumbnailSvg || ''}</div>
+        <div class="nmf-block-preview">
+          ${b.thumbnailSvg || ''}
+          <span class="nmf-block-drag-handle" title="${I18n.t('ui.drag_to_canvas', 'Arraste para o canvas')}">⋮⋮</span>
+        </div>
         <div class="nmf-block-meta">
-          <span class="nmf-block-name">${blockName}</span>
-          <button type="button" class="nmf-block-add-btn">${I18n.t('ui.insert_block', '+ Inserir')}</button>
+          <div class="nmf-block-info">
+            <span class="nmf-block-name">${title}</span>
+            ${desc ? `<p class="nmf-block-desc">${desc}</p>` : ''}
+          </div>
+          <button type="button" class="nmf-block-add-btn">${I18n.t('ui.insert', '+ Inserir')}</button>
         </div>
       `;
 
-      // Clique no card ou botão insere o bloco
-      card.addEventListener('click', () => {
-        try {
-          const newBlock = b.create();
-          this.store.addBlock(newBlock);
-          this.store.selectNode(newBlock.id);
-        } catch (err) {
-          console.error('[NewsMailForge] Erro ao criar bloco:', err);
-        }
-      });
-
-      // Suporte a Drag & Drop
       card.addEventListener('dragstart', (e) => {
+        const payload = { kind: 'catalog-block', blockId: b.id };
+        window.__nmfActiveDragPayload = payload;
+        e.dataTransfer.setData('application/x-nmf', JSON.stringify(payload));
         e.dataTransfer.setData('text/plain', b.id);
-        e.dataTransfer.effectAllowed = 'copy';
+        e.dataTransfer.effectAllowed = 'copyMove';
       });
 
-      this.drawerBody.appendChild(card);
-    });
+      card.addEventListener('dragend', () => {
+        window.__nmfActiveDragPayload = null;
+      });
 
-    this.drawerEl.classList.add('is-open');
-    this.isDrawerOpen = true;
+      card.addEventListener('click', () => {
+        this._handleCatalogBlockClick(b);
+      });
+
+      this.catalogList.appendChild(card);
+    });
   }
 
   /**
-   * Fecha a gaveta lateral
+   * Filtra itens das grades rápidas ao digitar na busca
+   * @private
+   */
+  _filterQuickItems() {
+    const q = this.searchQuery;
+    if (this.gridStructures) {
+      const cards = this.gridStructures.querySelectorAll('.nmf-quick-card');
+      cards.forEach((c) => {
+        const text = (c.textContent || '').toLowerCase();
+        c.style.display = !q || text.includes(q) ? 'flex' : 'none';
+      });
+    }
+    if (this.gridElements) {
+      const cards = this.gridElements.querySelectorAll('.nmf-quick-card');
+      cards.forEach((c) => {
+        const text = (c.textContent || '').toLowerCase();
+        c.style.display = !q || text.includes(q) ? 'flex' : 'none';
+      });
+    }
+  }
+
+  /**
+   * Constrói o Construtor Interativo de Colunas Personalizadas
+   * @private
+   * @param {HTMLElement} parentContainer
+   */
+  _buildCustomColBuilder(parentContainer) {
+    const builder = document.createElement('div');
+    builder.className = 'nmf-custom-col-builder';
+
+    // 1. Título
+    const title = document.createElement('div');
+    title.className = 'nmf-custom-col-title';
+    title.textContent = I18n.t('ui.custom_cols_title', 'Linha com Colunas Personalizadas');
+    builder.appendChild(title);
+
+    // 2. Seletor rápido de quantidade de colunas (1 a 6 pills)
+    const pillsWrap = document.createElement('div');
+    pillsWrap.className = 'nmf-custom-col-pills';
+
+    const countOptions = [1, 2, 3, 4, 5, 6];
+    const pillButtons = [];
+
+    const getEquallyDivided = (count) => {
+      const base = Math.floor(100 / count);
+      const arr = Array(count).fill(base);
+      const remainder = 100 - base * count;
+      for (let i = 0; i < remainder; i++) {
+        arr[i] += 1;
+      }
+      return arr;
+    };
+
+    let updateVisualBar = null;
+
+    countOptions.forEach((cnt) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `nmf-custom-col-pill ${this.customColWidths.length === cnt ? 'is-active' : ''}`;
+      btn.textContent = `${cnt} Col${cnt > 1 ? 's' : ''}`;
+      btn.addEventListener('click', () => {
+        if (cnt === 2 && this.customColWidths.length !== 2) {
+          this.customColWidths = [30, 70];
+        } else if (this.customColWidths.length !== cnt) {
+          this.customColWidths = getEquallyDivided(cnt);
+        }
+        pillButtons.forEach(b => b.classList.toggle('is-active', b === btn));
+        if (updateVisualBar) updateVisualBar();
+      });
+      pillButtons.push(btn);
+      pillsWrap.appendChild(btn);
+    });
+    builder.appendChild(pillsWrap);
+
+    // 3. Barra visual proporcional interativa com splitters arrastáveis
+    const visualBar = document.createElement('div');
+    visualBar.className = 'nmf-visual-col-bar';
+    builder.appendChild(visualBar);
+
+    // 4. Input numérico manual das proporções
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'nmf-custom-col-input-wrap';
+
+    const inputLabel = document.createElement('span');
+    inputLabel.className = 'nmf-custom-col-input-label';
+    inputLabel.textContent = '%:';
+    inputWrap.appendChild(inputLabel);
+
+    const inputProportions = document.createElement('input');
+    inputProportions.type = 'text';
+    inputProportions.className = 'nmf-custom-col-input';
+    inputProportions.value = this.customColWidths.join(', ');
+    inputWrap.appendChild(inputProportions);
+    builder.appendChild(inputWrap);
+
+    // Função de re-renderização da barra visual e sincronização do input
+    updateVisualBar = (syncInput = true) => {
+      visualBar.innerHTML = '';
+      const totalSegs = this.customColWidths.length;
+
+      this.customColWidths.forEach((w, idx) => {
+        const seg = document.createElement('div');
+        seg.className = 'nmf-visual-col-seg';
+        seg.style.width = `${w}%`;
+        seg.textContent = `${w}%`;
+        seg.title = `Coluna ${idx + 1}: ${w}%`;
+        visualBar.appendChild(seg);
+
+        // Splitter interativo entre segmentos adjacentes
+        if (idx < totalSegs - 1) {
+          const splitter = document.createElement('div');
+          splitter.className = 'nmf-visual-col-splitter';
+          splitter.title = I18n.t('ui.drag_handle', 'Arraste para mover ou reordenar');
+
+          splitter.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const barRect = visualBar.getBoundingClientRect();
+            const startX = e.clientX;
+            const initialWLeft = this.customColWidths[idx];
+            const initialWRight = this.customColWidths[idx + 1];
+            const combinedWidth = initialWLeft + initialWRight;
+
+            const onMouseMove = (moveEv) => {
+              const deltaPx = moveEv.clientX - startX;
+              const deltaPct = Math.round((deltaPx / barRect.width) * 100);
+
+              let newWLeft = Math.max(10, Math.min(combinedWidth - 10, initialWLeft + deltaPct));
+              let newWRight = combinedWidth - newWLeft;
+
+              this.customColWidths[idx] = newWLeft;
+              this.customColWidths[idx + 1] = newWRight;
+
+              updateVisualBar(true);
+            };
+
+            const onMouseUp = () => {
+              window.removeEventListener('mousemove', onMouseMove);
+              window.removeEventListener('mouseup', onMouseUp);
+            };
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+          });
+
+          visualBar.appendChild(splitter);
+        }
+      });
+
+      if (syncInput) {
+        inputProportions.value = this.customColWidths.join(', ');
+      }
+
+      pillButtons.forEach((b, idx) => {
+        b.classList.toggle('is-active', idx + 1 === totalSegs);
+      });
+    };
+
+    // Input manual de proporções com normalização para 100%
+    inputProportions.addEventListener('input', () => {
+      const raw = inputProportions.value;
+      const parsed = raw.split(/[,-]/).map(s => parseFloat(s.trim())).filter(n => !isNaN(n) && n > 0);
+      if (parsed.length >= 1) {
+        const sum = parsed.reduce((a, b) => a + b, 0);
+        const normalized = parsed.map(n => Math.round((n / sum) * 100));
+        const diff = 100 - normalized.reduce((a, b) => a + b, 0);
+        normalized[normalized.length - 1] += diff;
+        this.customColWidths = normalized;
+        updateVisualBar(false);
+      }
+    });
+
+    inputProportions.addEventListener('blur', () => {
+      inputProportions.value = this.customColWidths.join(', ');
+    });
+
+    updateVisualBar(true);
+
+    // 5. Botão primário arrastável e clicável
+    const btnInsert = document.createElement('button');
+    btnInsert.type = 'button';
+    btnInsert.className = 'nmf-btn nmf-btn-primary nmf-custom-col-insert-btn';
+    btnInsert.draggable = true;
+    btnInsert.title = I18n.t('ui.custom_cols_insert', '+ Inserir Linha');
+    btnInsert.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>${I18n.t('ui.custom_cols_insert', '+ Inserir Linha')}</span>
+    `;
+
+    btnInsert.addEventListener('click', () => {
+      this._handleStructureClick(this.customColWidths.join('-'));
+    });
+
+    btnInsert.addEventListener('dragstart', (e) => {
+      const layoutStr = this.customColWidths.join('-');
+      const payload = { kind: 'structure', layout: layoutStr };
+      window.__nmfActiveDragPayload = payload;
+      e.dataTransfer.setData('application/x-nmf', JSON.stringify(payload));
+      e.dataTransfer.setData('text/plain', 'structure:' + layoutStr);
+      e.dataTransfer.effectAllowed = 'copyMove';
+    });
+
+    btnInsert.addEventListener('dragend', () => {
+      window.__nmfActiveDragPayload = null;
+    });
+
+    builder.appendChild(btnInsert);
+    parentContainer.appendChild(builder);
+  }
+
+  /**
+   * Converte identificador ou padrão numérico para array de larguras percentuais
+   * @private
+   * @param {string|Array} layout
+   * @returns {string[]}
+   */
+  _parseLayoutWidths(layout) {
+    if (Array.isArray(layout)) {
+      return layout.map(w => typeof w === 'number' ? `${w}%` : String(w));
+    }
+    const layoutMap = {
+      '100': ['100%'],
+      '1col': ['100%'],
+      '50-50': ['50%', '50%'],
+      '2col': ['50%', '50%'],
+      '33-33-33': ['33.33%', '33.33%', '33.33%'],
+      '3col': ['33.33%', '33.33%', '33.33%'],
+      '30-70': ['30%', '70%'],
+      '70-30': ['70%', '30%'],
+      '25-25-25-25': ['25%', '25%', '25%', '25%'],
+      '4col': ['25%', '25%', '25%', '25%']
+    };
+    if (layoutMap[layout]) {
+      return layoutMap[layout];
+    }
+    if (typeof layout === 'string') {
+      const parts = layout.split(/[,-]/).map(s => parseFloat(s.trim())).filter(n => !isNaN(n) && n > 0);
+      if (parts.length > 0) {
+        const sum = parts.reduce((a, b) => a + b, 0);
+        return parts.map(n => `${((n / sum) * 100).toFixed(2)}%`);
+      }
+    }
+    return ['100%'];
+  }
+
+  /**
+   * Cria um bloco estrutural com o número e larguras de células informados
+   * @private
+   * @param {string} layoutId
+   * @returns {Object}
+   */
+  _createStructureBlock(layoutId) {
+    const widths = this._parseLayoutWidths(layoutId);
+    const cells = widths.map((w) =>
+      BlockFactory.createCell({
+        settings: { width: w },
+        children: []
+      })
+    );
+    const row = BlockFactory.createRow({ cells });
+    return BlockFactory.createBlock({ rows: [row] });
+  }
+
+  /**
+   * Trata o clique em um cartão de estrutura
+   * @private
+   * @param {string} layoutId
+   */
+  _handleStructureClick(layoutId) {
+    try {
+      const widths = this._parseLayoutWidths(layoutId);
+      const sel = this.store.getSelectedNode();
+
+      // Se uma 'row' estiver selecionada (ou se o nó selecionado estiver dentro de uma row):
+      let selRowId = null;
+      if (sel && sel.node) {
+        if (sel.node.type === 'row') {
+          selRowId = sel.node.id;
+        } else if (sel.path && Array.isArray(sel.path)) {
+          const r = sel.path.find((n) => n && n.type === 'row');
+          if (r) selRowId = r.id;
+        }
+      }
+
+      if (selRowId && typeof this.store.setRowColumnsLayout === 'function') {
+        this.store.setRowColumnsLayout(selRowId, widths);
+        return;
+      }
+
+      // Caso contrário, insere um novo bloco
+      let selBlockId = null;
+      if (sel && sel.node) {
+        if (sel.node.type === 'block') {
+          selBlockId = sel.node.id;
+        } else if (sel.path && Array.isArray(sel.path)) {
+          const blk = sel.path.find((n) => n && n.type === 'block');
+          if (blk) selBlockId = blk.id;
+        }
+      }
+
+      const newBlock = this._createStructureBlock(layoutId);
+      if (selBlockId) {
+        this.store.insertNodeAt(selBlockId, 'after', newBlock);
+      } else {
+        this.store.addBlock(newBlock);
+      }
+    } catch (err) {
+      console.error('[NewsMailForge] Erro ao criar estrutura:', err);
+    }
+  }
+
+  /**
+   * Cria um átomo de acordo com o tipo solicitado
+   * @private
+   * @param {string} type
+   * @returns {Object}
+   */
+  _createAtomByType(type) {
+    switch (type) {
+      case 'text':
+        return BlockFactory.createTextAtom();
+      case 'button':
+        return BlockFactory.createButtonAtom();
+      case 'image':
+        return BlockFactory.createImageAtom();
+      case 'divider':
+        return BlockFactory.createDividerAtom();
+      case 'spacer':
+        return BlockFactory.createSpacerAtom();
+      case 'menu':
+        return BlockFactory.createMenuAtom();
+      case 'social':
+        return BlockFactory.createSocialAtom();
+      default:
+        return BlockFactory.createTextAtom();
+    }
+  }
+
+  /**
+   * Trata o clique em um elemento básico
+   * @private
+   * @param {string} type
+   */
+  _handleAtomClick(type) {
+    try {
+      const atom = this._createAtomByType(type);
+      const sel = this.store.getSelectedNode();
+
+      if (sel && sel.node) {
+        if (sel.node.type === 'cell') {
+          this.store.insertNodeAt(sel.node.id, 'inside', atom);
+          return;
+        }
+        if (sel.node.type === 'atom') {
+          this.store.insertNodeAt(sel.node.id, 'after', atom);
+          return;
+        }
+        if (sel.node.type === 'row') {
+          const firstCell = Array.isArray(sel.node.cells) && sel.node.cells[0];
+          if (firstCell) {
+            this.store.insertNodeAt(firstCell.id, 'inside', atom);
+            return;
+          }
+        }
+        if (sel.node.type === 'block') {
+          const firstRow = Array.isArray(sel.node.rows) && sel.node.rows[0];
+          const firstCell = firstRow && Array.isArray(firstRow.cells) && firstRow.cells[0];
+          if (firstCell) {
+            this.store.insertNodeAt(firstCell.id, 'inside', atom);
+            return;
+          }
+        }
+      }
+
+      // Caso contrário, cria um novo bloco contendo esse átomo
+      const newBlock = BlockFactory.createBlock({
+        rows: [
+          BlockFactory.createRow({
+            cells: [
+              BlockFactory.createCell({
+                children: [atom]
+              })
+            ]
+          })
+        ]
+      });
+      this.store.addBlock(newBlock);
+    } catch (err) {
+      console.error('[NewsMailForge] Erro ao inserir átomo:', err);
+    }
+  }
+
+  /**
+   * Trata o clique em um bloco do catálogo
+   * @private
+   * @param {Object} b
+   */
+  _handleCatalogBlockClick(b) {
+    try {
+      const sel = this.store.getSelectedNode();
+      let selBlockId = null;
+      if (sel && sel.node) {
+        if (sel.node.type === 'block') {
+          selBlockId = sel.node.id;
+        } else if (sel.path && Array.isArray(sel.path)) {
+          const blk = sel.path.find((n) => n && n.type === 'block');
+          if (blk) selBlockId = blk.id;
+        }
+      }
+
+      const newBlock = b.create();
+      if (selBlockId) {
+        this.store.insertNodeAt(selBlockId, 'after', newBlock);
+      } else {
+        this.store.addBlock(newBlock);
+      }
+    } catch (err) {
+      console.error('[NewsMailForge] Erro ao criar bloco:', err);
+    }
+  }
+
+  /**
+   * Abre a categoria informada selecionando a pílula correspondente
+   * @param {string} categoryId
+   */
+  openDrawer(categoryId) {
+    if (categoryId) {
+      this.selectedCategory = categoryId;
+      if (this.pillsContainer) {
+        this._updatePillStates(this.pillsContainer);
+      }
+      this._renderCatalogList();
+    }
+  }
+
+  /**
+   * Fecha qualquer estado transitório da gaveta
    */
   closeDrawer() {
-    if (!this.drawerEl) return;
-    this.drawerEl.classList.remove('is-open');
     this.isDrawerOpen = false;
-
-    const items = this.element.querySelectorAll('.nmf-category-item');
-    items.forEach((it) => it.classList.remove('is-active'));
   }
 
   /**
@@ -334,7 +976,7 @@ export class SidebarPanel {
   }
 
   /**
-   * Monta o elemento e o drawer no body
+   * Monta o elemento na raiz do DOM
    * @param {HTMLElement} parent
    */
   mount(parent) {

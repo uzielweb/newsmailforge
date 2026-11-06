@@ -162,6 +162,53 @@ export class HeaderBar {
     div1.className = 'nmf-divider-v';
     center.appendChild(div1);
 
+    // Segmented Mode Switcher (Editor / Preview)
+    const modeGroup = document.createElement('div');
+    modeGroup.className = 'nmf-btn-group';
+
+    const currentMode = this.store.getState().mode || 'editor';
+
+    const btnModeEditor = document.createElement('button');
+    btnModeEditor.type = 'button';
+    btnModeEditor.className = `nmf-btn-segment ${currentMode === 'editor' ? 'is-active' : ''}`;
+    btnModeEditor.title = I18n.t('ui.mode_editor', 'Editor');
+    btnModeEditor.innerHTML = `
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"></path>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+      </svg>
+      <span>${I18n.t('ui.mode_editor', 'Editor')}</span>
+    `;
+    btnModeEditor.addEventListener('click', () => {
+      this.store.setMode('editor');
+    });
+
+    const btnModePreview = document.createElement('button');
+    btnModePreview.type = 'button';
+    btnModePreview.className = `nmf-btn-segment ${currentMode === 'preview' ? 'is-active' : ''}`;
+    btnModePreview.title = I18n.t('ui.mode_preview', 'Preview');
+    btnModePreview.innerHTML = `
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <span>${I18n.t('ui.mode_preview', 'Preview')}</span>
+    `;
+    btnModePreview.addEventListener('click', () => {
+      this.store.setMode('preview');
+    });
+
+    this.btnModeEditor = btnModeEditor;
+    this.btnModePreview = btnModePreview;
+
+    modeGroup.appendChild(btnModeEditor);
+    modeGroup.appendChild(btnModePreview);
+    center.appendChild(modeGroup);
+
+    const div2 = document.createElement('div');
+    div2.className = 'nmf-divider-v';
+    center.appendChild(div2);
+
     // Segmented Viewport Switcher
     const viewportGroup = document.createElement('div');
     viewportGroup.className = 'nmf-btn-group';
@@ -291,6 +338,17 @@ export class HeaderBar {
     if (this.btnUndo) this.btnUndo.disabled = !state.canUndo;
     if (this.btnRedo) this.btnRedo.disabled = !state.canRedo;
 
+    if (this.btnModeEditor && this.btnModePreview) {
+      const mode = state.mode || 'editor';
+      if (mode === 'editor') {
+        this.btnModeEditor.classList.add('is-active');
+        this.btnModePreview.classList.remove('is-active');
+      } else {
+        this.btnModeEditor.classList.remove('is-active');
+        this.btnModePreview.classList.add('is-active');
+      }
+    }
+
     if (this.btnDesktop && this.btnMobile) {
       if (state.viewport === 'desktop') {
         this.btnDesktop.classList.add('is-active');
@@ -303,11 +361,20 @@ export class HeaderBar {
   }
 
   /**
-   * Registra atalhos globais de teclado (Ctrl+Z, Ctrl+Y, Ctrl+S)
+   * Registra atalhos globais de teclado (Ctrl+Z, Ctrl+Y, Ctrl+S, Escape)
    * @private
    */
   _attachGlobalShortcuts() {
     window.addEventListener('keydown', (e) => {
+      // Tecla Escape para voltar ao modo editor se estiver em preview
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        if (this.store.getState().mode === 'preview') {
+          e.preventDefault();
+          this.store.setMode('editor');
+          return;
+        }
+      }
+
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const mod = isMac ? e.metaKey : e.ctrlKey;
 

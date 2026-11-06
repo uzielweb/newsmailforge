@@ -86,7 +86,7 @@ export function createBlock(overrides = {}) {
   return {
     id: o.id || uid('blk'),
     type: 'block',
-    label: o.label || I18n.t('UI_BLOCK_LABEL', 'Bloco'),
+    label: o.label || I18n.t('type.block', 'Linha'),
     settings: {
       backgroundColor: '#ffffff',
       backgroundImage: '',
@@ -302,6 +302,30 @@ export function createDividerAtom(overrides = {}) {
 }
 
 /**
+ * Cria um Átomo de Espaçador Vertical
+ * @param {Object} overrides
+ * @returns {Object}
+ */
+export function createSpacerAtom(overrides = {}) {
+  const o = overrides || {};
+  return {
+    id: o.id || uid('atom'),
+    type: 'atom',
+    atomType: 'spacer',
+    label: o.label || I18n.t('atom.spacer', 'Espaçador'),
+    settings: {
+      height: o.settings && o.settings.height !== undefined ? o.settings.height : 32,
+      spacing: {
+        padding: [0, 0, 0, 0],
+        margin: [0, 0, 0, 0],
+        ...((o.settings && o.settings.spacing) || {})
+      },
+      ...(o.settings || {})
+    }
+  };
+}
+
+/**
  * Cria um Átomo de Menu de Navegação Horizontal
  * @param {Object} overrides
  * @returns {Object}
@@ -425,6 +449,7 @@ export const BlockFactory = {
   createButtonAtom,
   createImageAtom,
   createDividerAtom,
+  createSpacerAtom,
   createMenuAtom,
   createSocialAtom,
   cloneNodeWithNewIds
